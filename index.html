@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Control de CÃ­clicos â ICBFS</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{--primary:#1a3a5c;--accent:#e8332a;--success:#2e7d32;--warning:#f57c00;--danger:#c62828;--bg:#f4f6f9;--card:#fff;--border:#dde3ec;--text:#1c2b3a;--muted:#6b7a8d;--light:#eef1f6}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* ââ Pantallas de perfil y PIN ââ */
+.screen{display:none;min-height:100vh;align-items:center;justify-content:center;padding:24px}
+.screen.active{display:flex}
+.screen-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:40px 36px;max-width:460px;width:100%;box-shadow:0 4px 24px rgba(0,0,0,.08)}
+.screen-logo{font-size:1rem;font-weight:700;color:var(--primary);letter-spacing:.5px;margin-bottom:8px}
+.screen-logo span{color:#e8332a}
+.screen-title{font-size:1.5rem;font-weight:700;color:var(--primary);margin-bottom:6px}
+.screen-sub{font-size:.88rem;color:var(--muted);margin-bottom:28px}
+.profile-btn{width:100%;padding:18px 20px;border:2px solid var(--border);border-radius:12px;background:#fff;cursor:pointer;text-align:left;display:flex;align-items:center;gap:16px;margin-bottom:12px;transition:border-color .2s,background .2s}
+.profile-btn:hover{border-color:var(--primary);background:var(--light)}
+.profile-btn .picon{font-size:2rem;width:48px;text-align:center;flex-shrink:0}
+.profile-btn .ptitle{font-size:1rem;font-weight:700;color:var(--primary)}
+.profile-btn .psub{font-size:.8rem;color:var(--muted);margin-top:2px}
+.profile-btn.supervisor-btn{border-color:#dde3ec}
+.pin-field{display:flex;flex-direction:column;gap:6px;margin-bottom:20px}
+.pin-field label{font-size:.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.pin-input{width:100%;padding:12px 16px;border:2px solid var(--border);border-radius:10px;font-size:1.4rem;letter-spacing:6px;text-align:center;color:var(--primary);transition:border-color .2s}
+.pin-input:focus{outline:none;border-color:var(--primary)}
+.pin-error{background:#ffebee;border:1px solid #ef9a9a;color:var(--danger);border-radius:8px;padding:10px 14px;font-size:.83rem;margin-bottom:16px;display:none}
+.pin-back{background:none;border:none;color:var(--muted);font-size:.83rem;cursor:pointer;margin-top:12px;text-decoration:underline}
+
+/* ââ App ââ */
+#app{display:none}
+header{background:var(--primary);color:#fff;padding:0 32px;display:flex;align-items:center;justify-content:space-between;height:64px;box-shadow:0 2px 8px rgba(0,0,0,.18)}
+header .logo{font-size:1.1rem;font-weight:700;letter-spacing:.5px}
+header .logo span{color:#f0a500}
+header .role-badge{font-size:.75rem;background:rgba(255,255,255,.15);padding:3px 10px;border-radius:12px;margin-left:10px}
+header nav button{background:none;border:none;color:rgba(255,255,255,.75);font-size:.88rem;padding:8px 14px;cursor:pointer;border-radius:6px;transition:background .2s}
+header nav button.active,header nav button:hover{background:rgba(255,255,255,.15);color:#fff}
+header .exit-btn{background:none;border:1px solid rgba(255,255,255,.3);color:rgba(255,255,255,.75);font-size:.78rem;padding:5px 12px;border-radius:6px;cursor:pointer;transition:all .2s}
+header .exit-btn:hover{background:rgba(255,255,255,.15);color:#fff}
+main{max-width:1000px;margin:28px auto;padding:0 16px}
+.view{display:none}.view.active{display:block}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:18px;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.card h2{font-size:1rem;color:var(--primary);margin-bottom:16px;display:flex;align-items:center;gap:8px;font-weight:700}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:.78rem;font-weight:700;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px}
+.field select,.field input[type=text],.field input[type=number],.field input[type=password],.field textarea{width:100%;padding:9px 13px;border:1.5px solid var(--border);border-radius:8px;font-size:.93rem;color:var(--text);background:#fff;transition:border-color .2s}
+.field select:focus,.field input:focus,.field textarea:focus{outline:none;border-color:var(--primary)}
+.field textarea{resize:vertical;min-height:76px}
+.row-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.upload-zone{border:2px dashed var(--border);border-radius:10px;padding:28px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--primary);background:var(--light)}
+.upload-zone .uicon{font-size:2rem;margin-bottom:8px}
+.upload-zone p{color:var(--muted);font-size:.88rem}
+.upload-zone strong{color:var(--primary)}
+#fileInput{display:none}
+.badge{display:inline-flex;align-items:center;gap:5px;border-radius:20px;padding:3px 12px;font-size:.78rem;font-weight:700}
+.badge-vacuno{background:#fce4ec;color:#880e4f;border:1px solid #f48fb1}
+.tag{display:inline-block;padding:2px 9px;border-radius:12px;font-size:.76rem;font-weight:700}
+.tag.ok{background:#e8f5e9;color:var(--success)}.tag.alerta{background:#ffebee;color:var(--danger)}.tag.warn{background:#fff3e0;color:#e65100}
+.sku-table{width:100%;border-collapse:collapse;font-size:.83rem}
+.sku-table th{background:var(--primary);color:#fff;padding:9px 10px;text-align:left;font-weight:600;white-space:nowrap}
+.sku-table td{padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:middle}
+.sku-table tr:hover td{background:var(--light)}
+.sku-table tr.vacuno-row td{background:#fff8fa}
+.cnt-input{width:80px;padding:5px 7px;border:1.5px solid var(--border);border-radius:6px;font-size:.88rem;text-align:right}
+.cnt-input:focus{outline:none;border-color:var(--primary)}
+.diff-neg{color:var(--danger);font-weight:700}
+.diff-pos{color:var(--success);font-weight:700}
+.diff-zero{color:var(--muted)}
+.summary-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:16px 0}
+.s-box{background:var(--light);border-radius:8px;padding:12px 14px;text-align:center}
+.s-box .sv{font-size:1.2rem;font-weight:700;color:var(--primary)}
+.s-box .sl{font-size:.75rem;color:var(--muted);margin-top:2px}
+.confirm-block{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;background:#fffde7;border:1.5px solid #ffe082;border-radius:10px;margin-top:12px}
+.confirm-block input[type=checkbox]{width:20px;height:20px;margin-top:1px;accent-color:var(--primary);cursor:pointer;flex-shrink:0}
+.confirm-block label{font-size:.88rem;color:#5d4037;cursor:pointer}
+.btn{padding:10px 22px;border:none;border-radius:8px;font-size:.9rem;font-weight:700;cursor:pointer;transition:opacity .2s,transform .1s}
+.btn:active{transform:scale(.98)}.btn:hover{opacity:.87}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-accent{background:var(--accent);color:#fff}
+.btn-outline{background:#fff;color:var(--primary);border:2px solid var(--primary)}
+.btn-sm{padding:6px 14px;font-size:.8rem}
+.form-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:8px;flex-wrap:wrap}
+.ab{padding:12px 16px;border-radius:9px;margin-bottom:16px;display:flex;align-items:center;gap:10px;font-size:.88rem}
+.ab.info{background:#e3f2fd;border:1px solid #90caf9;color:#1565c0}
+.ab.warning{background:#fff3e0;border:1px solid #ffcc80;color:#e65100}
+.ab.danger{background:#ffebee;border:1px solid #ef9a9a;color:var(--danger)}
+.ab.success{background:#e8f5e9;border:1px solid #a5d6a7;color:var(--success)}
+.store-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+.store-tab{padding:7px 16px;border:2px solid var(--border);border-radius:20px;background:#fff;cursor:pointer;font-size:.83rem;font-weight:700;color:var(--muted);transition:all .2s}
+.store-tab.active{border-color:var(--primary);background:var(--primary);color:#fff}
+.stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px}
+.stat-box{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px;text-align:center}
+.stat-box .val{font-size:1.8rem;font-weight:700;color:var(--primary)}.stat-box .lbl{font-size:.76rem;color:var(--muted);margin-top:3px}
+.week-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.day-cell{border:1.5px solid var(--border);border-radius:10px;padding:14px;text-align:center}
+.day-cell .dn{font-size:.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:5px}
+.day-cell .di{font-size:1.7rem}
+.day-cell .dl{font-size:.76rem;margin-top:4px;color:var(--muted)}
+.day-cell.done{border-color:var(--success);background:#f1f8f1}
+.day-cell.missing{border-color:var(--danger);background:#fff5f5}
+.day-cell.pending{background:#fafafa}
+.hist-table{width:100%;border-collapse:collapse;font-size:.83rem}
+.hist-table th{background:var(--light);color:var(--primary);padding:8px 10px;text-align:left;font-weight:700;border-bottom:2px solid var(--border);white-space:nowrap}
+.hist-table td{padding:8px 10px;border-bottom:1px solid var(--border)}
+.hist-table tr:hover td{background:var(--light)}
+.loader{display:none;text-align:center;padding:20px;color:var(--muted);font-size:.88rem}
+.loader.show{display:block}
+#toast{position:fixed;bottom:24px;right:24px;background:var(--primary);color:#fff;padding:12px 20px;border-radius:10px;font-size:.88rem;font-weight:700;box-shadow:0 4px 16px rgba(0,0,0,.2);transform:translateY(80px);opacity:0;transition:all .3s;z-index:999}
+#toast.show{transform:translateY(0);opacity:1}
+@media(max-width:640px){
+  .row-2,.row-3{grid-template-columns:1fr}
+  .stat-row{grid-template-columns:1fr 1fr}
+  .week-grid{grid-template-columns:1fr}
+  .summary-strip{grid-template-columns:1fr 1fr}
+  header{padding:0 14px}
+  .screen-card{padding:28px 20px}
+}
+</style>
+</head>
+<body>
+
+<!-- ââââââââââââââââââââââââââââââââââââââââââ
+     PANTALLA 1 â SELECCIÃN DE PERFIL
+ââââââââââââââââââââââââââââââââââââââââââ -->
+<div id="screen-profile" class="screen active">
+  <div class="screen-card">
+    <div class="screen-logo">ICBFS <span>Â·</span> Control de CÃ­clicos</div>
+    <div class="screen-title">Â¿QuiÃ©n eres?</div>
+    <div class="screen-sub">Selecciona tu perfil para continuar</div>
+
+    <button class="profile-btn" onclick="selectProfile('jefe')">
+      <div class="picon">ðª</div>
+      <div>
+        <div class="ptitle">Jefe de Tienda</div>
+        <div class="psub">Registrar y verificar cÃ­clicos de tu tienda</div>
+      </div>
+    </button>
+
+    <button class="profile-btn supervisor-btn" onclick="selectProfile('supervisor')">
+      <div class="picon">ð</div>
+      <div>
+        <div class="ptitle">Supervisor</div>
+        <div class="psub">Dashboard de todas las tiendas Â· configuraciÃ³n Â· requiere PIN</div>
+      </div>
+    </button>
+  </div>
+</div>
+
+<!-- ââââââââââââââââââââââââââââââââââââââââââ
+     PANTALLA 2 â PIN SUPERVISOR
+ââââââââââââââââââââââââââââââââââââââââââ -->
+<div id="screen-pin" class="screen">
+  <div class="screen-card">
+    <div class="screen-logo">ICBFS <span>Â·</span> Control de CÃ­clicos</div>
+    <div class="screen-title">ð Acceso Supervisor</div>
+    <div class="screen-sub">Ingresa el PIN para continuar</div>
+
+    <div id="pinError" class="pin-error">PIN incorrecto. IntÃ©ntalo de nuevo.</div>
+
+    <div class="pin-field">
+      <label>PIN de Supervisor</label>
+      <input type="password" id="pinInput" class="pin-input" maxlength="8" placeholder="â¢â¢â¢â¢" onkeydown="if(event.key==='Enter')checkPIN()">
+    </div>
+
+    <button class="btn btn-primary" style="width:100%" onclick="checkPIN()">Ingresar â</button>
+    <button class="pin-back" onclick="goBack()">â Volver a la selecciÃ³n de perfil</button>
+  </div>
+</div>
+
+<!-- ââââââââââââââââââââââââââââââââââââââââââ
+     APP PRINCIPAL
+ââââââââââââââââââââââââââââââââââââââââââ -->
+<div id="app">
+
+<header>
+  <div style="display:flex;align-items:center">
+    <div class="logo">ICBFS <span>Â·</span> CÃ­clicos</div>
+    <span id="roleBadge" class="role-badge"></span>
+  </div>
+  <nav id="mainNav">
+    <button class="active" onclick="showView('formulario',this)">ð Formulario</button>
+    <button onclick="showView('dashboard',this)">ð Dashboard</button>
+    <button id="configNavBtn" style="display:none" onclick="showView('config',this)">âï¸ Config</button>
+  </nav>
+  <button class="exit-btn" onclick="goBack()">Cambiar perfil</button>
+</header>
+
+<main>
+
+<!-- ââ FORMULARIO ââ -->
+<div id="view-formulario" class="view active">
+  <div id="alertBanner"></div>
+
+  <div class="card">
+    <h2>ðª Paso 1 â IdentificaciÃ³n</h2>
+    <div class="row-2">
+      <div class="field">
+        <label>Tienda *</label>
+        <select id="fTienda" onchange="checkTodayStatus()">
+          <option value="">â Seleccionar tienda â</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Fecha</label>
+        <input type="text" id="fFecha" readonly style="background:#f5f5f5;color:var(--muted)">
+      </div>
+    </div>
+    <div class="field">
+      <label>Jefe de Tienda *</label>
+      <input type="text" id="fJefe" placeholder="Nombre completo">
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>ð Paso 2 â Cargar Planilla de Stock (exportaciÃ³n SAP)</h2>
+    <div class="ab info" style="margin-bottom:14px">
+      â¹ï¸ Sube la planilla con la hoja <strong>BASE</strong> â la misma que exportas desde SAP con la variante <strong>/FSINV</strong> transacciÃ³n <strong>ZMB52</strong>.
+    </div>
+    <div class="upload-zone" id="uploadZone"
+         onclick="document.getElementById('fileInput').click()"
+         ondragover="event.preventDefault();this.classList.add('drag')"
+         ondragleave="this.classList.remove('drag')"
+         ondrop="handleDrop(event)">
+      <div class="uicon">ð</div>
+      <p><strong>Haz clic o arrastra</strong> la planilla de stock aquÃ­</p>
+      <p style="margin-top:5px;font-size:.76rem">Archivo .xlsx exportado desde SAP</p>
+    </div>
+    <input type="file" id="fileInput" accept=".xlsx,.xls" onchange="handleFile(event)">
+    <div class="loader" id="fileLoader">â³ Procesando planillaâ¦</div>
+    <div id="fileStatus"></div>
+  </div>
+
+  <div id="catSection" style="display:none">
+    <div class="card">
+      <h2>ðï¸ Paso 3 â Seleccionar CategorÃ­a del CÃ­clico</h2>
+      <p style="font-size:.83rem;color:var(--muted);margin-bottom:14px">
+        Selecciona la categorÃ­a a contar hoy. <strong>Vacuno Refrigerado y Vacuno Congelado</strong> se incluyen automÃ¡ticamente en todos los cÃ­clicos.
+      </p>
+      <div class="row-2">
+        <div class="field">
+          <label>CategorÃ­a del cÃ­clico *</label>
+          <select id="fCategoria" onchange="loadSKUs()">
+            <option value="">â Seleccionar categorÃ­a â</option>
+          </select>
+        </div>
+        <div class="field" style="display:flex;align-items:flex-end;gap:8px;flex-wrap:wrap">
+          <div class="badge badge-vacuno">ð¥© Vacuno Refrigerado â siempre incluido</div>
+          <div class="badge badge-vacuno">ð¥© Vacuno Congelado â siempre incluido</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="skuSection" style="display:none">
+    <div class="card">
+      <h2>ð¢ Paso 4 â Ingresar Conteo FÃ­sico</h2>
+      <p style="font-size:.83rem;color:var(--muted);margin-bottom:14px">
+        Ingresa la cantidad fÃ­sica encontrada para cada SKU. La diferencia se calcula automÃ¡ticamente: <span style="color:var(--danger);font-weight:700">negativo = faltante</span> Â· <span style="color:var(--success);font-weight:700">positivo = sobrante</span>.
+      </p>
+      <div class="summary-strip" id="summaryStrip">
+        <div class="s-box"><div class="sv" id="sSKUs">0</div><div class="sl">SKUs totales</div></div>
+        <div class="s-box"><div class="sv" id="sContados">0</div><div class="sl">SKUs contados</div></div>
+        <div class="s-box"><div class="sv" id="sFaltante" style="color:var(--danger)">$0</div><div class="sl">Faltante valorizado</div></div>
+        <div class="s-box"><div class="sv" id="sSobrante" style="color:var(--success)">$0</div><div class="sl">Sobrante valorizado</div></div>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="sku-table">
+          <thead>
+            <tr>
+              <th>Material</th><th>DescripciÃ³n</th><th>CategorÃ­a</th><th>Familia</th><th>UM</th>
+              <th style="text-align:right">Stock SAP</th><th style="text-align:right">Valor Unit. $</th>
+              <th style="text-align:center">Conteo FÃ­sico</th><th style="text-align:right">Dif. Unid.</th>
+              <th style="text-align:right">Dif. Valor $</th><th style="text-align:center">Estado</th>
+            </tr>
+          </thead>
+          <tbody id="skuBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>âï¸ Paso 5 â Ajuste y ConfirmaciÃ³n</h2>
+      <div class="row-3">
+        <div class="field">
+          <label>SKUs con diferencia</label>
+          <input type="text" id="fDiffCount" readonly style="background:#f5f5f5">
+        </div>
+        <div class="field">
+          <label>Total faltante ($)</label>
+          <input type="text" id="fTotalFaltante" readonly style="background:#fff0f0;color:var(--danger);font-weight:700">
+        </div>
+        <div class="field">
+          <label>Total sobrante ($)</label>
+          <input type="text" id="fTotalSobrante" readonly style="background:#f0fff0;color:var(--success);font-weight:700">
+        </div>
+      </div>
+      <div class="field">
+        <label>Monto neto del ajuste ($) *</label>
+        <input type="number" id="fMonto" placeholder="Ingresa el monto total del ajuste en sistema" min="0" step="1">
+      </div>
+      <div class="field">
+        <label>Observaciones / Causas de diferencias</label>
+        <textarea id="fObservaciones" placeholder="Describe las causas principales de las diferencias encontradasâ¦"></textarea>
+      </div>
+      <div class="confirm-block">
+        <input type="checkbox" id="fConfirm">
+        <label for="fConfirm">
+          <strong>Confirmo que el ajuste fue realizado y registrado en el sistema SAP.</strong><br>
+          <span style="font-size:.8rem">Al marcar, declaro que las diferencias encontradas fueron corregidas en el sistema de inventario.</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn btn-outline" onclick="resetForm()">ð Limpiar</button>
+      <button class="btn btn-accent" id="btnEnviar" onclick="submitForm()">â Enviar Registro</button>
+    </div>
+  </div>
+</div>
+
+<!-- ââ DASHBOARD ââ -->
+<div id="view-dashboard" class="view">
+  <div id="dashApiStatus"></div>
+  <div class="store-tabs" id="storeTabs"></div>
+  <div id="dashContent"><p style="color:var(--muted);text-align:center;padding:40px">Selecciona una tienda para ver su reporte.</p></div>
+</div>
+
+<!-- ââ CONFIG (solo supervisor) ââ -->
+<div id="view-config" class="view">
+  <div class="card">
+    <h2>ðª Tiendas</h2>
+    <div id="storeList" style="margin-bottom:16px"></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+      <div style="flex:1;min-width:140px">
+        <label style="font-size:.78rem;font-weight:700;color:var(--muted);display:block;margin-bottom:5px;text-transform:uppercase">Nombre</label>
+        <input type="text" id="newStoreName" placeholder="Ej: Providencia" style="width:100%;padding:9px 13px;border:1.5px solid var(--border);border-radius:8px;font-size:.93rem">
+      </div>
+      <div style="flex:1.5;min-width:180px">
+        <label style="font-size:.78rem;font-weight:700;color:var(--muted);display:block;margin-bottom:5px;text-transform:uppercase">Email encargado</label>
+        <input type="text" id="newStoreEmail" placeholder="encargado@icbfs.cl" style="width:100%;padding:9px 13px;border:1.5px solid var(--border);border-radius:8px;font-size:.93rem">
+      </div>
+      <button class="btn btn-primary" onclick="addStore()">+ Agregar Tienda</button>
+    </div>
+  </div>
+  <div class="card">
+    <h2>ð§ Alertas</h2>
+    <div class="field">
+      <label>Email supervisor (recibe todas las alertas)</label>
+      <input type="text" id="cfgEmail" value="shenriquez@icbfs.cl" style="max-width:360px">
+    </div>
+    <div class="field">
+      <label>DÃ­as obligatorios</label>
+      <input type="text" value="Lunes, MiÃ©rcoles, Viernes" readonly style="background:#f5f5f5;max-width:260px">
+    </div>
+    <button class="btn btn-primary btn-sm" onclick="saveConfig()">Guardar configuraciÃ³n</button>
+  </div>
+  <div class="card">
+    <h2>ð Seguridad</h2>
+    <div class="row-2" style="max-width:480px">
+      <div class="field">
+        <label>PIN actual</label>
+        <input type="password" id="cfgPinOld" placeholder="PIN actual" style="letter-spacing:4px">
+      </div>
+      <div class="field">
+        <label>PIN nuevo</label>
+        <input type="password" id="cfgPinNew" placeholder="Nuevo PIN" style="letter-spacing:4px">
+      </div>
+    </div>
+    <button class="btn btn-outline btn-sm" onclick="changePIN()">Cambiar PIN</button>
+    <p style="font-size:.76rem;color:var(--muted);margin-top:8px">PIN inicial: <code>1234</code></p>
+  </div>
+  <div class="card">
+    <h2>ð ConexiÃ³n SharePoint</h2>
+    <div class="field">
+      <label>URL del sitio SharePoint (SP_SITE)</label>
+      <input type="text" id="cfgSpSite" style="font-size:.83rem;font-family:monospace">
+    </div>
+    <div class="field">
+      <label>Nombre de la lista</label>
+      <input type="text" id="cfgSpList" style="font-size:.83rem;font-family:monospace">
+    </div>
+    <button class="btn btn-primary btn-sm" onclick="saveSpConfig()">Guardar conexiÃ³n</button>
+    <p style="font-size:.76rem;color:var(--muted);margin-top:8px">Los cambios aplican al recargar la pÃ¡gina.</p>
+  </div>
+  <div class="card">
+    <h2>ðï¸ Zona de peligro</h2>
+    <p style="font-size:.83rem;color:var(--muted);margin-bottom:12px">Eliminar registros del cachÃ© local (los datos en SharePoint no se eliminan).</p>
+    <button class="btn btn-sm" style="background:#ffebee;color:var(--danger);border:1px solid #ef9a9a" onclick="clearAllData()">Borrar cachÃ© local</button>
+  </div>
+</div>
+
+</main>
+</div><!-- /app -->
+
+<div id="toast"></div>
+
+<script>
+// ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+//  CONFIGURACIÃN BASE
+//  Si se actualiza desde Config, se guarda en localStorage
+// ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+const DEFAULT_SP_SITE = 'https://icbfsfood-my.sharepoint.com/personal/shenriquez_icbfs_cl';
+const DEFAULT_SP_LIST = 'CiclicosTiendas';
+const DEFAULT_PIN     = '1234';
+
+function getSpConfig() {
+  return {
+    site: localStorage.getItem('ci_sp_site') || DEFAULT_SP_SITE,
+    list: localStorage.getItem('ci_sp_list') || DEFAULT_SP_LIST
+  };
+}
+
+let SP_SITE = getSpConfig().site;
+let SP_LIST = getSpConfig().list;
+
+// ââ Constantes âââââââââââââââââââââââââââââââââââââââââââââââ
+const DIAS_OBL  = [1,3,5];
+const DIAS_N    = {1:'Lunes',3:'MiÃ©rcoles',5:'Viernes'};
+const CATS_VACUNO = ['VACUNO REFRIGERADO','VACUNO CONGELADO'];
+
+// ââ Estado âââââââââââââââââââââââââââââââââââââââââââââââââââ
+let stockRows = [], categorias = [], currentSKUs = [];
+let currentRole = null;
+
+// ââ LocalStorage helpers âââââââââââââââââââââââââââââââââââââ
+const LS = {
+  stores:  () => JSON.parse(localStorage.getItem('ci_stores_v2')  || '[]'),
+  records: () => JSON.parse(localStorage.getItem('ci_records') || '[]'),
+  config:  () => JSON.parse(localStorage.getItem('ci_config')  || '{"email":"shenriquez@icbfs.cl"}'),
+  pin:     () => localStorage.getItem('ci_pin') || DEFAULT_PIN,
+  save:    (k,v) => localStorage.setItem(k, JSON.stringify(v))
+};
+
+// ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+//  PERFIL Y PIN
+// ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+function selectProfile(role) {
+  if (role === 'jefe') {
+    launchApp('jefe');
+  } else {
+    // Mostrar pantalla PIN
+    document.getElementById('screen-profile').classList.remove('active');
+    document.getElementById('screen-pin').classList.add('active');
+    document.getElementById('pinInput').value = '';
+    document.getElementById('pinError').style.display = 'none';
+    setTimeout(() => document.getElementById('pinInput').focus(), 100);
+  }
+}
+
+function checkPIN() {
+  const input = document.getElementById('pinInput').value;
+  if (input === LS.pin()) {
+    document.getElementById('pinError').style.display = 'none';
+    launchApp('supervisor');
+  } else {
+    document.getElementById('pinError').style.display = 'block';
+    document.getElementById('pinInput').value = '';
+    document.getElementById('pinInput').focus();
+  }
+}
+
+function goBack() {
+  document.getElementById('screen-pin').classList.remove('active');
+  document.getElementById('screen-profile').classList.add('active');
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('screen-profile').classList.add('active');
+  currentRole = null;
+}
+
+function launchApp(role) {
+  currentRole = role;
+  // Ocultar pantallas
+  document.getElementById('screen-profile').classList.remove('active');
+  document.getElementById('screen-pin').classList.remove('active');
+  // Mostrar app
+  document.getElementById('app').style.display = 'block';
+  // Configurar UI segÃºn rol
+  document.getElementById('roleBadge').textContent = role === 'supervisor' ? 'Supervisor' : 'Jefe de Tienda';
+  document.getElementById('configNavBtn').style.display = role === 'supervisor' ? '' : 'none';
+  // Init
+  init();
+  // Ir a formulario
+  showView('formulario', document.querySelector('#mainNav button'));
+}
+
+function changePIN() {
+  const oldPin = document.getElementById('cfgPinOld').value;
+  const newPin = document.getElementById('cfgPinNew').value.trim();
+  if (oldPin !== LS.pin()) { showToast('â PIN actual incorrecto'); return; }
+  if (!newPin || newPin.length < 4) { showToast('â ï¸ El PIN debe tener al menos 4 caracteres'); return; }
+  localStorage.setItem('ci_pin', newPin);
+  document.getElementById('cfgPinOld').value = '';
+  document.getElementById('cfgPinNew').value = '';
+  showToast('â PIN actualizado');
+}
+
+function saveSpConfig() {
+  const site = document.getElementById('cfgSpSite').value.trim().replace(/\/$/, '');
+  const list = document.getElementById('cfgSpList').value.trim();
+  if (!site || !list) { showToast('â ï¸ Completa URL y nombre de lista'); return; }
+  localStorage.setItem('ci_sp_site', site);
+  localStorage.setItem('ci_sp_list', list);
+  showToast('â Guardado â recarga la pÃ¡gina para aplicar');
+}
+
+// ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+//  API SHAREPOINT
+// ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+async function spDigest() {
+  const r = await fetch(`${SP_SITE}/_api/contextinfo`, {
+    method: 'POST',
+    headers: { 'Accept': 'application/json;odata=nometadata' }
+  });
+  const d = await r.json();
+  return d.FormDigestValue;
+}
+
+function fromSP(it) {
+  return {
+    id:              it.RegistroId,
+    tienda:          it.Tienda,
+    fecha:           it.Fecha,
+    hora:            it.Hora  || '',
+    jefe:            it.Jefe  || '',
+    cat:             it.Categoria || '',
+    monto:           it.Monto || 0,
+    observaciones:   it.Observaciones || '',
+    ajusteConfirmado:true,
+    conDiff:         it.ConDiff       || 0,
+    totalFaltante:   it.TotalFaltante || 0,
+    totalSobrante:   it.TotalSobrante || 0,
+    totalSKUs:       it.TotalSKUs     || 0,
+    items:           (() => { try { return JSON.parse(it.ItemsJSON || '[]'); } catch(e) { return []; } })()
+  };
+}
+
+const API = {
+  async getRecords(tienda = null) {
+    const filter = tienda ? `&$filter=Tienda eq '${tienda.replace(/'/g,"''")}'` : '';
+    const url = `${SP_SITE}/_api/web/lists/GetByTitle('${SP_LIST}')/items`
+      + `?$select=RegistroId,Tienda,Fecha,Hora,Jefe,Categoria,Monto,Observaciones,ConDiff,TotalFaltante,TotalSobrante,TotalSKUs,ItemsJSON`
+      + `&$top=500&$orderby=Created%20desc${filter}`;
+    const r = await fetch(url, {
+      headers: { 'Accept': 'application/json;odata=nometadata' }
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const d = await r.json();
+    return d.value.map(fromSP);
+  },
+
+  async saveRecord(record) {
+    const digest = await spDigest();
+    const body = JSON.stringify({
+      '__metadata': { 'type': `SP.Data.${SP_LIST}ListItem` },
+      Title:         `${record.tienda}_${record.fecha}_${record.id}`,
+      RegistroId:    String(record.id || Date.now()),
+      Tienda:        record.tienda,
+      Fecha:         record.fecha,
+      Hora:          record.hora          || '',
+      Jefe:          record.jefe          || '',
+      Categoria:     record.cat           || '',
+      Monto:         record.monto         || 0,
+      Observaciones: record.observaciones || '',
+      ConDiff:       record.conDiff       || 0,
+      TotalFaltante: record.totalFaltante || 0,
+      TotalSobrante: record.totalSobrante || 0,
+      TotalSKUs:     record.totalSKUs     || 0,
+      ItemsJSON:     JSON.stringify(record.items || [])
+    });
+    const r = await fetch(`${SP_SITE}/_api/web/lists/GetByTitle('${SP_LIST}')/items`, {
+      method: 'POST',
+      headers: {
+        'Accept':          'application/json;odata=nometadata',
+        'Content-Type':    'application/json;odata=verbose',
+        'X-RequestDigest': digest
+      },
+      body
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    return r.json();
+  }
+};
+
+// ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+//  INIT
+// ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+function init() {
+  const TIENDAS = [
+    {name:'Vitacura',     email:'mcastilla@icbfs.cl'},
+    {name:'Valdivia',     email:'lpardo@icbfs.cl'},
+    {name:'ViÃ±a del Mar', email:'glillo@icbfs.cl'},
+    {name:'Calama',       email:'jvelasquez@icbfs.cl'},
+    {name:'Antofagasta',  email:'cromero@icbfs.cl'}
+  ];
+  // Siempre sincronizar emails de tiendas default con los valores del archivo
+  // (garantiza que correos actualizados se apliquen aunque existan datos viejos en localStorage)
+  const stored = LS.stores();
+  const merged = TIENDAS.map(def => {
+    const existing = stored.find(s => s.name === def.name);
+    // Si la tienda ya existe, actualizar su email con el del archivo (fuente de verdad)
+    return existing ? { name: def.name, email: def.email } : def;
+  });
+  // Conservar tiendas adicionales que el usuario haya agregado manualmente
+  const extra = stored.filter(s => !TIENDAS.find(d => d.name === s.name));
+  LS.save('ci_stores_v2', [...merged, ...extra]);
+  // Actualizar SP config en campos de config
+  document.getElementById('cfgSpSite').value = SP_SITE;
+  document.getElementById('cfgSpList').value = SP_LIST;
+  document.getElementById('cfgEmail').value  = LS.config().email || 'shenriquez@icbfs.cl';
+  document.getElementById('fFecha').value    = new Date().toLocaleDateString('es-CL',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  populateStoreSelect();
+  checkTodayStatus();
+}
+
+function populateStoreSelect() {
+  const sel = document.getElementById('fTienda');
+  sel.innerHTML = '<option value="">â Seleccionar tienda â</option>';
+  LS.stores().forEach(s => {
+    const o = document.createElement('option');
+    o.value = s.name; o.textContent = s.name; sel.appendChild(o);
+  });
+}
+
+// ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+//  FORMULARIO
+// ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+async function checkTodayStatus() {
+  const b = document.getElementById('alertBanner');
+  const today = new Date(); const dow = today.getDay();
+  const tienda = document.getElementById('fTienda').value;
+
+  if (!DIAS_OBL.includes(dow)) {
+    b.innerHTML = `<div class="ab info">â¹ï¸ Hoy (<strong>${today.toLocaleDateString('es-CL',{weekday:'long'})}</strong>) no es dÃ­a de cÃ­clico. Los dÃ­as obligatorios son <strong>Lunes, MiÃ©rcoles y Viernes</strong>.</div>`; return;
+  }
+  if (!tienda) {
+    b.innerHTML = `<div class="ab warning">â ï¸ Hoy es <strong>${DIAS_N[dow]}</strong> â dÃ­a obligatorio. Selecciona tu tienda para continuar.</div>`; return;
+  }
+
+  const ds = today.toISOString().split('T')[0];
+  let done = LS.records().find(r => r.tienda === tienda && r.fecha === ds);
+
+  if (!done) {
+    try {
+      const apiRecords = await API.getRecords(tienda);
+      done = apiRecords.find(r => r.fecha === ds);
+      if (done) {
+        const local = LS.records();
+        if (!local.find(r => r.tienda === tienda && r.fecha === ds)) {
+          local.push(done); LS.save('ci_records', local);
+        }
+      }
+    } catch(e) { /* sin red */ }
+  }
+
+  b.innerHTML = done
+    ? `<div class="ab success">â El cÃ­clico de <strong>${tienda}</strong> ya fue registrado hoy.</div>`
+    : `<div class="ab danger">ð¨ Hoy es <strong>${DIAS_N[dow]}</strong> â el cÃ­clico de <strong>${tienda}</strong> aÃºn <u>no ha sido completado</u>. Completa el formulario antes del cierre del dÃ­a.</div>`;
+}
+
+function handleDrop(e) { e.preventDefault(); document.getElementById('uploadZone').classList.remove('drag'); if(e.dataTransfer.files[0]) processFile(e.dataTransfer.files[0]); }
+function handleFile(e) { if(e.target.files[0]) processFile(e.target.files[0]); }
+
+function processFile(file) {
+  document.getElementById('fileLoader').classList.add('show');
+  document.getElementById('fileStatus').innerHTML = '';
+  document.getElementById('catSection').style.display = 'none';
+  document.getElementById('skuSection').style.display = 'none';
+  stockRows = []; categorias = []; currentSKUs = [];
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const wb = XLSX.read(e.target.result, {type:'binary'});
+      const sheetName = wb.SheetNames.find(n => n.trim().toUpperCase() === 'BASE') || wb.SheetNames[0];
+      const ws = wb.Sheets[sheetName];
+      const allRows = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
+      const headers = allRows[5] ? allRows[5].map(h => String(h).trim()) : [];
+      const idx = {
+        material: findIdx(headers, ['Material','material']),
+        desc:     findIdx(headers, ['Texto breve de material','Descripcion','descripcion','desc']),
+        um:       findIdx(headers, ['UMSal','UM','Unidad']),
+        stock:    findIdx(headers, ['Libre utilizaciÃ³l\n SAP','Libre utilizaciÃ³n SAP','Stock SAP','stock sap','libre utilizaci']),
+        valUnit:  findIdx(headers, ['Valor Unitario','valor unitario','Precio']),
+        cat:      findIdx(headers, ['Categoria ','Categoria','CategorÃ­a','categorÃ­a']),
+        familia:  findIdx(headers, ['Familia ','Familia','familia']),
+        lote:     findIdx(headers, ['Lote Sap','lote sap','Lote SAP','LOTE SAP'])
+      };
+      stockRows = [];
+      for (let i = 6; i < allRows.length; i++) {
+        const row = allRows[i];
+        const cat = String(row[idx.cat] || '').trim().toUpperCase();
+        const mat = String(row[idx.material] || '').trim();
+        if (!mat || mat === 'Material') continue;
+        stockRows.push({
+          material: mat,
+          desc:     String(row[idx.desc] || 'â').trim(),
+          um:       String(row[idx.um] || '').trim(),
+          stock:    parseFloat(row[idx.stock]) || 0,
+          valUnit:  parseFloat(row[idx.valUnit]) || 0,
+          cat, familia: String(row[idx.familia] || 'â').trim().toUpperCase(),
+          lote: String(row[idx.lote] || '').trim()
+        });
+      }
+      const catSet = new Set(stockRows.map(r => r.cat).filter(c => c && !CATS_VACUNO.includes(c)));
+      categorias = [...catSet].sort();
+      const sel = document.getElementById('fCategoria');
+      sel.innerHTML = '<option value="">â Seleccionar categorÃ­a â</option>';
+      categorias.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c; sel.appendChild(o); });
+      const vacunoCount = stockRows.filter(r => CATS_VACUNO.includes(r.cat)).length;
+      document.getElementById('fileStatus').innerHTML = `<div class="ab success" style="margin-top:12px">â Hoja BASE cargada â <strong>${stockRows.length} SKUs</strong> en <strong>${categorias.length}</strong> categorÃ­as + ${vacunoCount} SKUs de Vacuno (automÃ¡tico).</div>`;
+      document.getElementById('catSection').style.display = 'block';
+    } catch(err) {
+      document.getElementById('fileStatus').innerHTML = `<div class="ab danger">â Error al leer la planilla: ${err.message}</div>`;
+    }
+    document.getElementById('fileLoader').classList.remove('show');
+  };
+  reader.readAsBinaryString(file);
+}
+
+function findIdx(headers, candidates) {
+  for (const c of candidates) {
+    const i = headers.findIndex(h => h.toLowerCase().includes(c.toLowerCase()));
+    if (i !== -1) return i;
+  }
+  return -1;
+}
+
+function loadSKUs() {
+  const cat = document.getElementById('fCategoria').value;
+  if (!cat) return;
+  const tienda  = document.getElementById('fTienda').value;
+  const isAnto  = tienda === 'Antofagasta';
+  const MAX_CAT = 10, MAX_VACUNO = isAnto ? 5 : 3;
+
+  function groupByMaterial(rows) {
+    const map = new Map();
+    rows.forEach(r => {
+      if (!map.has(r.material)) map.set(r.material, { ...r, stockTotal:0, valorTotal:0 });
+      const g = map.get(r.material);
+      g.stockTotal += r.stock; g.valorTotal += r.stock * r.valUnit;
+    });
+    return [...map.values()];
+  }
+
+  const catGroups = groupByMaterial(stockRows.filter(r => r.cat === cat))
+    .sort((a,b) => b.valorTotal - a.valorTotal || b.stockTotal - a.stockTotal)
+    .slice(0, MAX_CAT);
+  let selectedMaterials = new Map(catGroups.map(g => [g.material, g.cat]));
+
+  const faltantes = MAX_CAT - selectedMaterials.size;
+  let extraCats = [];
+  if (faltantes > 0) {
+    const extras = groupByMaterial(
+        stockRows.filter(r => !CATS_VACUNO.includes(r.cat) && r.cat !== cat && !selectedMaterials.has(r.material))
+      ).sort((a,b) => b.valorTotal - a.valorTotal).slice(0, faltantes);
+    extras.forEach(g => { selectedMaterials.set(g.material, g.cat); if (!extraCats.includes(g.cat)) extraCats.push(g.cat); });
+  }
+
+  const catRows = stockRows.filter(r => !CATS_VACUNO.includes(r.cat) && selectedMaterials.has(r.material));
+  const {weekStart, weekEnd} = getWeekDays();
+  const weekRecords = LS.records().filter(r => r.tienda === tienda && r.fecha >= weekStart && r.fecha <= weekEnd);
+  const usedVacuno  = new Set(weekRecords.flatMap(r => (r.items||[]).filter(it => CATS_VACUNO.includes(it.cat)).map(it => it.material)));
+  const vacunoGroups = groupByMaterial(stockRows.filter(r => CATS_VACUNO.includes(r.cat)))
+    .sort((a,b) => b.valorTotal - a.valorTotal);
+  const vacunoTop = [...vacunoGroups.filter(g => !usedVacuno.has(g.material)), ...vacunoGroups.filter(g => usedVacuno.has(g.material))].slice(0, MAX_VACUNO);
+  const selectedVacuno = new Set(vacunoTop.map(g => g.material));
+  const vacunoRows = stockRows.filter(r => CATS_VACUNO.includes(r.cat) && selectedVacuno.has(r.material));
+  vacunoRows.forEach(r => { r._repeated = usedVacuno.has(r.material); });
+
+  currentSKUs = [...catRows, ...vacunoRows];
+  const matMeta = new Map();
+  currentSKUs.forEach(r => {
+    if (!matMeta.has(r.material)) matMeta.set(r.material, {stockTotal:0, count:0});
+    const m = matMeta.get(r.material); m.stockTotal += r.stock; m.count++;
+  });
+  const matSeen = new Set();
+  currentSKUs.forEach(r => {
+    const m = matMeta.get(r.material);
+    r._isFirstLot = !matSeen.has(r.material); r._stockTotal = m.stockTotal; r._lotCount = m.count;
+    r._isExtra = !CATS_VACUNO.includes(r.cat) && r.cat !== cat;
+    matSeen.add(r.material);
+  });
+
+  const tbody = document.getElementById('skuBody');
+  tbody.innerHTML = '';
+  const prevBanner = document.getElementById('skuBanner');
+  if (prevBanner) prevBanner.remove();
+  const uniqueMats = new Set(currentSKUs.filter(r=>!CATS_VACUNO.includes(r.cat)).map(r=>r.material)).size;
+  const repeatedCount = [...new Set(vacunoRows.filter(r=>r._repeated).map(r=>r.material))].length;
+  const banner = document.createElement('div');
+  banner.id = 'skuBanner';
+  const extraMsg = extraCats.length ? `<span class="tag warn" style="margin-left:6px">â ï¸ Se completÃ³ con: ${extraCats.join(', ')}</span>` : '';
+  banner.innerHTML = `<div class="ab ${extraCats.length?'warning':'info'}" style="margin-bottom:12px">
+    ð <strong>${uniqueMats} cÃ³digos de producto</strong> (${catRows.length} filas con lotes) + <strong>${vacunoTop.length} cortes vacuno</strong>${isAnto?' <span class="tag warn">Antofagasta</span>':''}.
+    ${extraMsg}
+    ${repeatedCount>0?`<span style="color:var(--warning);margin-left:4px">â ï¸ ${repeatedCount} corte(s) vacuno ya contados esta semana.</span>`:'<span style="margin-left:4px">â Sin cortes vacuno repetidos.</span>'}
+  </div>`;
+  document.getElementById('skuSection').insertBefore(banner, document.getElementById('skuSection').firstChild);
+
+  let prevMat = null;
+  currentSKUs.forEach((sku, i) => {
+    const isVacuno = CATS_VACUNO.includes(sku.cat), multiLote = sku._lotCount > 1, isExtra = sku._isExtra;
+    if (sku.material !== prevMat && multiLote) {
+      const sep = document.createElement('tr');
+      sep.style.cssText = 'background:#f0f4ff';
+      sep.innerHTML = `<td colspan="11" style="padding:6px 12px;font-size:.78rem;color:var(--primary);font-weight:700">
+        ð¦ ${sku.material} â ${sku.desc} &nbsp;Â·&nbsp;<span style="color:var(--muted)">Stock total sistema: <strong>${fmtN(sku._stockTotal)} ${sku.um}</strong> en ${sku._lotCount} lotes</span>
+        ${isVacuno?'<span class="badge badge-vacuno" style="margin-left:6px;font-size:.68rem">ð¥©</span>':''}
+        ${isExtra?`<span class="tag warn" style="margin-left:4px;font-size:.68rem">complemento: ${sku.cat}</span>`:''}
+        ${sku._repeated?'<span class="tag warn" style="margin-left:4px;font-size:.68rem">â ï¸ ya contado esta semana</span>':''}
+      </td>`;
+      tbody.appendChild(sep);
+    }
+    prevMat = sku.material;
+    const tr = document.createElement('tr');
+    if (isVacuno) tr.classList.add('vacuno-row');
+    if (isExtra) tr.style.background = '#fffbf0';
+    if (sku._repeated) tr.style.opacity = '0.78';
+    tr.innerHTML = `
+      <td style="padding-left:${multiLote?'22px':'10px'}"><code style="font-size:.76rem">${sku.material}</code>${multiLote?`<span style="font-size:.7rem;color:var(--muted)"> Â· ${sku.lote||'sin lote'}</span>`:''}</td>
+      <td style="max-width:200px;font-size:.83rem">${sku.desc}${isVacuno&&!multiLote?`<span class="badge badge-vacuno" style="font-size:.65rem;padding:1px 7px;margin-left:4px">ð¥©</span>`:''}${isExtra&&!multiLote?`<span class="tag warn" style="font-size:.68rem;margin-left:4px">complemento</span>`:''}</td>
+      <td><span class="tag ${isVacuno?'warn':isExtra?'warn':'ok'}" style="font-size:.7rem">${sku.cat}</span></td>
+      <td style="color:var(--muted);font-size:.78rem">${sku.familia}</td>
+      <td style="text-align:center;color:var(--muted);font-size:.83rem">${sku.um}</td>
+      <td style="text-align:right;font-weight:600;font-size:.85rem">${fmtN(sku.stock)}</td>
+      <td style="text-align:right;color:var(--muted);font-size:.83rem">${fmtCLP(sku.valUnit)}</td>
+      <td style="text-align:center"><input class="cnt-input" type="number" min="0" step="0.001" id="cnt_${i}" placeholder="â" oninput="updDiff(${i})"></td>
+      <td style="text-align:right" id="difU_${i}" class="diff-zero">â</td>
+      <td style="text-align:right" id="difV_${i}" class="diff-zero">â</td>
+      <td style="text-align:center" id="est_${i}">â</td>`;
+    tbody.appendChild(tr);
+  });
+  document.getElementById('skuSection').style.display = 'block';
+  updSummary();
+}
+
+function updDiff(i) {
+  const val = parseFloat(document.getElementById(`cnt_${i}`).value);
+  const difU = document.getElementById(`difU_${i}`), difV = document.getElementById(`difV_${i}`), est = document.getElementById(`est_${i}`);
+  if (isNaN(val)) { difU.textContent='â'; difU.className='diff-zero'; difV.textContent='â'; difV.className='diff-zero'; est.textContent='â'; updSummary(); return; }
+  const sku = currentSKUs[i], du = val - sku.stock, dv = du * sku.valUnit;
+  difU.textContent = fmtSignN(du); difU.className = du<0?'diff-neg':du>0?'diff-pos':'diff-zero';
+  difV.textContent = fmtSignCLP(dv); difV.className = dv<0?'diff-neg':dv>0?'diff-pos':'diff-zero';
+  est.innerHTML = du===0?'<span class="tag ok">OK</span>':du<0?`<span class="tag alerta">Faltante</span>`:`<span class="tag ok" style="background:#e3f2fd;color:#1565c0">Sobrante</span>`;
+  updSummary();
+}
+
+function updSummary() {
+  let contados=0, faltante=0, sobrante=0, conDiff=0;
+  currentSKUs.forEach((sku,i) => {
+    const v = parseFloat(document.getElementById(`cnt_${i}`)?.value);
+    if (!isNaN(v)) { contados++; const dv=(v-sku.stock)*sku.valUnit; if(dv<0)faltante+=dv; if(dv>0)sobrante+=dv; if(v!==sku.stock)conDiff++; }
+  });
+  document.getElementById('sSKUs').textContent     = currentSKUs.length;
+  document.getElementById('sContados').textContent = contados;
+  document.getElementById('sFaltante').textContent = fmtCLP(Math.abs(faltante));
+  document.getElementById('sSobrante').textContent = fmtCLP(sobrante);
+  document.getElementById('fDiffCount').value      = conDiff ? `${conDiff} SKU(s)` : 'Sin diferencias';
+  document.getElementById('fTotalFaltante').value  = fmtCLP(Math.abs(faltante));
+  document.getElementById('fTotalSobrante').value  = fmtCLP(sobrante);
+}
+
+async function submitForm() {
+  const tienda = document.getElementById('fTienda').value;
+  const jefe   = document.getElementById('fJefe').value.trim();
+  const cat    = document.getElementById('fCategoria').value;
+  const monto  = document.getElementById('fMonto').value;
+  const observ = document.getElementById('fObservaciones').value.trim();
+  const conf   = document.getElementById('fConfirm').checked;
+
+  if (!tienda)           { showToast('â ï¸ Selecciona una tienda'); return; }
+  if (!jefe)             { showToast('â ï¸ Ingresa el nombre del jefe de tienda'); return; }
+  if (!stockRows.length) { showToast('â ï¸ Carga la planilla de stock'); return; }
+  if (!cat)              { showToast('â ï¸ Selecciona una categorÃ­a'); return; }
+  const conteos = currentSKUs.map((_,i) => parseFloat(document.getElementById(`cnt_${i}`)?.value));
+  if (conteos.every(isNaN))  { showToast('â ï¸ Ingresa al menos un conteo fÃ­sico'); return; }
+  if (monto === '')           { showToast('â ï¸ Ingresa el monto del ajuste (puede ser 0)'); return; }
+  if (!conf)                  { showToast('â ï¸ Confirma que el ajuste fue registrado en SAP'); return; }
+
+  const now = new Date();
+  let faltante=0, sobrante=0, conDiff=0;
+  const items = currentSKUs.map((sku,i) => {
+    const c=conteos[i], du=isNaN(c)?null:c-sku.stock, dv=du!==null?du*sku.valUnit:null;
+    if(dv!==null&&dv<0)faltante+=dv; if(dv!==null&&dv>0)sobrante+=dv; if(du!==null&&du!==0)conDiff++;
+    return {...sku, conteo:isNaN(c)?null:c, difUnid:du, difValor:dv};
+  });
+
+  const record = {
+    id: Date.now(), tienda, jefe, cat,
+    fecha: now.toISOString().split('T')[0],
+    hora:  now.toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'}),
+    monto: parseFloat(monto)||0, observaciones:observ, ajusteConfirmado:true,
+    items, conDiff, totalFaltante:Math.abs(faltante), totalSobrante:sobrante,
+    totalSKUs: items.filter(it=>it.conteo!==null).length
+  };
+
+  const btn = document.getElementById('btnEnviar');
+  btn.disabled = true; btn.textContent = 'â³ Enviandoâ¦';
+
+  try {
+    await API.saveRecord(record);
+    const records = LS.records(); records.push(record); LS.save('ci_records', records);
+    showToast('â CÃ­clico registrado exitosamente');
+  } catch(err) {
+    console.warn('API no disponible â guardando localmente:', err.message);
+    const records = LS.records(); records.push(record); LS.save('ci_records', records);
+    showToast('â ï¸ Sin conexiÃ³n â guardado localmente');
+  } finally {
+    btn.disabled = false; btn.textContent = 'â Enviar Registro';
+  }
+
+  checkTodayStatus();
+  resetForm();
+}
+
+function resetForm() {
+  stockRows=[]; categorias=[]; currentSKUs=[];
+  ['fJefe','fMonto','fDiffCount','fTotalFaltante','fTotalSobrante','fObservaciones']
+    .forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('fConfirm').checked = false;
+  document.getElementById('fileStatus').innerHTML = '';
+  document.getElementById('fileInput').value = '';
+  document.getElementById('catSection').style.display = 'none';
+  document.getElementById('skuSection').style.display = 'none';
+}
+
+// ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+//  DASHBOARD
+// ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+function renderStoreTabs() {
+  const tabs = document.getElementById('storeTabs'); tabs.innerHTML = '';
+  LS.stores().forEach((s,i) => {
+    const btn = document.createElement('button');
+    btn.className = 'store-tab' + (i===0?' active':'');
+    btn.textContent = s.name;
+    btn.onclick = () => { document.querySelectorAll('.store-tab').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); renderDashboard(s.name); };
+    tabs.appendChild(btn);
+  });
+  if (LS.stores().length) renderDashboard(LS.stores()[0].name);
+}
+
+function getWeekDays() {
+  const today=new Date(); const dow=today.getDay();
+  const mon=new Date(today); mon.setDate(today.getDate()-(dow===0?6:dow-1));
+  const toStr=d=>d.toISOString().split('T')[0];
+  const wed=new Date(mon); wed.setDate(mon.getDate()+2);
+  const fri=new Date(mon); fri.setDate(mon.getDate()+4);
+  return {weekStart:toStr(mon),weekEnd:toStr(fri),weekDays:[{name:'Lunes',date:toStr(mon)},{name:'MiÃ©rcoles',date:toStr(wed)},{name:'Viernes',date:toStr(fri)}]};
+}
+
+async function renderDashboard(tienda) {
+  document.getElementById('dashContent').innerHTML = '<p style="color:var(--muted);text-align:center;padding:40px">â³ Cargando datosâ¦</p>';
+
+  let records, fromApi=true;
+  try {
+    records = await API.getRecords(tienda);
+    const otros = LS.records().filter(r => r.tienda !== tienda);
+    LS.save('ci_records', [...otros, ...records]);
+    document.getElementById('dashApiStatus').innerHTML = '';
+  } catch(e) {
+    records = LS.records().filter(r => r.tienda === tienda);
+    fromApi = false;
+    document.getElementById('dashApiStatus').innerHTML = `<div class="ab warning">â ï¸ Sin conexiÃ³n a la nube â mostrando cachÃ© local.</div>`;
+  }
+
+  records = records.sort((a,b) => b.fecha.localeCompare(a.fecha));
+  const {weekStart,weekEnd,weekDays} = getWeekDays();
+  const wRecs     = records.filter(r => r.fecha >= weekStart && r.fecha <= weekEnd);
+  const cum       = Math.round((wRecs.length/3)*100);
+  const totalFalt = records.reduce((s,r)=>s+r.totalFaltante,0);
+  const today     = new Date().toISOString().split('T')[0];
+
+  document.getElementById('dashContent').innerHTML = `
+    <div class="stat-row">
+      <div class="stat-box"><div class="val">${wRecs.length}/3</div><div class="lbl">CÃ­clicos esta semana</div></div>
+      <div class="stat-box"><div class="val" style="color:${cum===100?'var(--success)':cum>=66?'var(--warning)':'var(--danger)'}">${cum}%</div><div class="lbl">Cumplimiento semanal</div></div>
+      <div class="stat-box"><div class="val" style="color:var(--danger)">${fmtCLP(totalFalt)}</div><div class="lbl">Faltante histÃ³rico total</div></div>
+    </div>
+    <div class="card">
+      <h2>ð Semana actual â ${weekStart} â ${weekEnd}</h2>
+      <div class="week-grid">
+        ${weekDays.map(d=>{
+          const rec=wRecs.find(r=>r.fecha===d.date), isPast=d.date<=today, cls=rec?'done':(isPast?'missing':'pending');
+          return `<div class="day-cell ${cls}">
+            <div class="dn">${d.name}</div>
+            <div class="di">${rec?'â':(isPast?'â':'â³')}</div>
+            <div class="dl">${rec?`${rec.hora} Â· ${rec.cat}`:(isPast?'No completado':'Pendiente')}</div>
+            ${rec?`<div style="margin-top:6px;font-size:.76rem;color:var(--danger)">${fmtCLP(rec.totalFaltante)} faltante</div>`:''}
+          </div>`;
+        }).join('')}
+      </div>
+      ${currentRole==='supervisor'&&wRecs.length<3?`<div style="margin-top:14px"><button class="btn btn-sm" style="background:#ffebee;color:var(--danger);border:1px solid #ef9a9a" onclick="sendAlert('${tienda}')">ð§ Enviar alerta de incumplimiento</button></div>`:''}
+    </div>
+    <div class="card">
+      <h2>ð Historial de cÃ­clicos â ${tienda}</h2>
+      ${!records.length?'<p style="color:var(--muted);font-size:.85rem">Sin registros aÃºn.</p>':`
+      <div style="overflow-x:auto">
+        <table class="hist-table">
+          <thead><tr><th>Fecha</th><th>DÃ­a</th><th>Hora</th><th>Jefe</th><th>CategorÃ­a</th><th>SKUs</th><th>Con dif.</th><th>Faltante $</th><th>Sobrante $</th><th>Ajuste $</th><th>SAP</th></tr></thead>
+          <tbody>
+            ${records.slice(0,30).map(r=>{
+              const d=new Date(r.fecha+'T12:00:00'), dn=['Dom','Lun','Mar','MiÃ©','Jue','Vie','SÃ¡b'][d.getDay()], ob=DIAS_OBL.includes(d.getDay());
+              return `<tr>
+                <td>${r.fecha}</td>
+                <td>${dn}${ob?' <span class="tag ok">â</span>':''}</td>
+                <td>${r.hora}</td><td>${r.jefe}</td><td>${r.cat}</td>
+                <td>${r.totalSKUs}</td>
+                <td>${r.conDiff>0?`<span class="tag alerta">${r.conDiff}</span>`:'<span class="tag ok">0</span>'}</td>
+                <td style="color:var(--danger);font-weight:700">${fmtCLP(r.totalFaltante||0)}</td>
+                <td style="color:var(--success);font-weight:700">${fmtCLP(r.totalSobrante||0)}</td>
+                <td>${fmtCLP(r.monto)}</td>
+                <td>${r.ajusteConfirmado?'â':'â'}</td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>`}
+    </div>`;
+}
+
+function sendAlert(tienda) {
+  const cfg=LS.config(); const store=LS.stores().find(s=>s.name===tienda);
+  const today=new Date().toISOString().split('T')[0];
+  const subj=encodeURIComponent(`[ALERTA] CÃ­clico pendiente â ${tienda} â ${today}`);
+  const body=encodeURIComponent(`Estimado/a,\n\nLa tienda "${tienda}" tiene cÃ­clicos pendientes esta semana (${today}).\nPor favor completar el formulario a la brevedad.\n\nSistema de Control de CÃ­clicos â ICBFS`);
+  const to=encodeURIComponent(`${cfg.email}${store?','+store.email:''}`);
+  window.open(`mailto:${to}?subject=${subj}&body=${body}`,'_blank');
+}
+
+// ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+//  CONFIG
+// ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+function renderConfigStores() {
+  const list=document.getElementById('storeList'); const stores=LS.stores();
+  if (!stores.length) { list.innerHTML='<p style="color:var(--muted);font-size:.83rem">No hay tiendas.</p>'; return; }
+  list.innerHTML=stores.map((s,i)=>`
+    <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">
+      <span style="font-weight:700;flex:1">ðª ${s.name}</span>
+      <span style="color:var(--muted);font-size:.83rem;flex:1.5">âï¸ ${s.email}</span>
+      <button class="btn btn-sm" style="background:#ffebee;color:var(--danger);border:1px solid #ef9a9a" onclick="removeStore(${i})">Eliminar</button>
+    </div>`).join('');
+}
+
+function addStore() {
+  const name=document.getElementById('newStoreName').value.trim(), email=document.getElementById('newStoreEmail').value.trim();
+  if(!name||!email){showToast('â ï¸ Ingresa nombre y email');return;}
+  const stores=LS.stores();
+  if(stores.find(s=>s.name===name)){showToast('â ï¸ Ya existe esa tienda');return;}
+  stores.push({name,email}); LS.save('ci_stores_v2',stores);
+  document.getElementById('newStoreName').value=''; document.getElementById('newStoreEmail').value='';
+  renderConfigStores(); populateStoreSelect(); renderStoreTabs(); showToast('â Tienda agregada');
+}
+
+function removeStore(i) {
+  if(!confirm('Â¿Eliminar esta tienda?'))return;
+  const stores=LS.stores(); stores.splice(i,1); LS.save('ci_stores_v2',stores);
+  renderConfigStores(); populateStoreSelect(); renderStoreTabs(); showToast('Tienda eliminada');
+}
+
+function saveConfig() {
+  LS.save('ci_config',{email:document.getElementById('cfgEmail').value.trim()});
+  showToast('â ConfiguraciÃ³n guardada');
+}
+
+function clearAllData() {
+  if(!confirm('Â¿Borrar el cachÃ© local? Los datos en SharePoint no se eliminan.'))return;
+  localStorage.removeItem('ci_records');
+  showToast('CachÃ© local eliminado');
+  renderDashboard(LS.stores()[0]?.name);
+}
+
+// ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+//  UI HELPERS
+// ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+function showView(name,btn) {
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+name).classList.add('active');
+  document.querySelectorAll('#mainNav button').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  if(name==='dashboard') renderStoreTabs();
+  if(name==='config') renderConfigStores();
+}
+
+function showToast(msg) {
+  const t=document.getElementBy
