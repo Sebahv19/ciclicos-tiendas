@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Control de CÃ­clicos â ICBFS</title>
+<title>Control de Cíclicos — ICBFS</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 :root{--primary:#1a3a5c;--accent:#e8332a;--success:#2e7d32;--warning:#f57c00;--danger:#c62828;--bg:#f4f6f9;--card:#fff;--border:#dde3ec;--text:#1c2b3a;--muted:#6b7a8d;--light:#eef1f6}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
 
-/* ââ Pantallas de perfil y PIN ââ */
+/* ── Pantallas de perfil y PIN ── */
 .screen{display:none;min-height:100vh;align-items:center;justify-content:center;padding:24px}
 .screen.active{display:flex}
 .screen-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:40px 36px;max-width:460px;width:100%;box-shadow:0 4px 24px rgba(0,0,0,.08)}
@@ -31,7 +31,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .pin-error{background:#ffebee;border:1px solid #ef9a9a;color:var(--danger);border-radius:8px;padding:10px 14px;font-size:.83rem;margin-bottom:16px;display:none}
 .pin-back{background:none;border:none;color:var(--muted);font-size:.83rem;cursor:pointer;margin-top:12px;text-decoration:underline}
 
-/* ââ App ââ */
+/* ── App ── */
 #app{display:none}
 header{background:var(--primary);color:#fff;padding:0 32px;display:flex;align-items:center;justify-content:space-between;height:64px;box-shadow:0 2px 8px rgba(0,0,0,.18)}
 header .logo{font-size:1.1rem;font-weight:700;letter-spacing:.5px}
@@ -126,85 +126,85 @@ main{max-width:1000px;margin:28px auto;padding:0 16px}
 </head>
 <body>
 
-<!-- ââââââââââââââââââââââââââââââââââââââââââ
-     PANTALLA 1 â SELECCIÃN DE PERFIL
-ââââââââââââââââââââââââââââââââââââââââââ -->
+<!-- ══════════════════════════════════════════
+     PANTALLA 1 — SELECCIÓN DE PERFIL
+══════════════════════════════════════════ -->
 <div id="screen-profile" class="screen active">
   <div class="screen-card">
-    <div class="screen-logo">ICBFS <span>Â·</span> Control de CÃ­clicos</div>
-    <div class="screen-title">Â¿QuiÃ©n eres?</div>
+    <div class="screen-logo">ICBFS <span>·</span> Control de Cíclicos</div>
+    <div class="screen-title">¿Quién eres?</div>
     <div class="screen-sub">Selecciona tu perfil para continuar</div>
 
     <button class="profile-btn" onclick="selectProfile('jefe')">
-      <div class="picon">ðª</div>
+      <div class="picon">🏪</div>
       <div>
         <div class="ptitle">Jefe de Tienda</div>
-        <div class="psub">Registrar y verificar cÃ­clicos de tu tienda</div>
+        <div class="psub">Registrar y verificar cíclicos de tu tienda</div>
       </div>
     </button>
 
     <button class="profile-btn supervisor-btn" onclick="selectProfile('supervisor')">
-      <div class="picon">ð</div>
+      <div class="picon">🔐</div>
       <div>
         <div class="ptitle">Supervisor</div>
-        <div class="psub">Dashboard de todas las tiendas Â· configuraciÃ³n Â· requiere PIN</div>
+        <div class="psub">Dashboard de todas las tiendas · configuración · requiere PIN</div>
       </div>
     </button>
   </div>
 </div>
 
-<!-- ââââââââââââââââââââââââââââââââââââââââââ
-     PANTALLA 2 â PIN SUPERVISOR
-ââââââââââââââââââââââââââââââââââââââââââ -->
+<!-- ══════════════════════════════════════════
+     PANTALLA 2 — PIN SUPERVISOR
+══════════════════════════════════════════ -->
 <div id="screen-pin" class="screen">
   <div class="screen-card">
-    <div class="screen-logo">ICBFS <span>Â·</span> Control de CÃ­clicos</div>
-    <div class="screen-title">ð Acceso Supervisor</div>
+    <div class="screen-logo">ICBFS <span>·</span> Control de Cíclicos</div>
+    <div class="screen-title">🔐 Acceso Supervisor</div>
     <div class="screen-sub">Ingresa el PIN para continuar</div>
 
-    <div id="pinError" class="pin-error">PIN incorrecto. IntÃ©ntalo de nuevo.</div>
+    <div id="pinError" class="pin-error">PIN incorrecto. Inténtalo de nuevo.</div>
 
     <div class="pin-field">
       <label>PIN de Supervisor</label>
-      <input type="password" id="pinInput" class="pin-input" maxlength="8" placeholder="â¢â¢â¢â¢" onkeydown="if(event.key==='Enter')checkPIN()">
+      <input type="password" id="pinInput" class="pin-input" maxlength="8" placeholder="••••" onkeydown="if(event.key==='Enter')checkPIN()">
     </div>
 
-    <button class="btn btn-primary" style="width:100%" onclick="checkPIN()">Ingresar â</button>
-    <button class="pin-back" onclick="goBack()">â Volver a la selecciÃ³n de perfil</button>
+    <button class="btn btn-primary" style="width:100%" onclick="checkPIN()">Ingresar →</button>
+    <button class="pin-back" onclick="goBack()">← Volver a la selección de perfil</button>
   </div>
 </div>
 
-<!-- ââââââââââââââââââââââââââââââââââââââââââ
+<!-- ══════════════════════════════════════════
      APP PRINCIPAL
-ââââââââââââââââââââââââââââââââââââââââââ -->
+══════════════════════════════════════════ -->
 <div id="app">
 
 <header>
   <div style="display:flex;align-items:center">
-    <div class="logo">ICBFS <span>Â·</span> CÃ­clicos</div>
+    <div class="logo">ICBFS <span>·</span> Cíclicos</div>
     <span id="roleBadge" class="role-badge"></span>
   </div>
   <nav id="mainNav">
-    <button class="active" onclick="showView('formulario',this)">ð Formulario</button>
-    <button onclick="showView('dashboard',this)">ð Dashboard</button>
-    <button id="configNavBtn" style="display:none" onclick="showView('config',this)">âï¸ Config</button>
+    <button class="active" onclick="showView('formulario',this)">📋 Formulario</button>
+    <button onclick="showView('dashboard',this)">📊 Dashboard</button>
+    <button id="configNavBtn" style="display:none" onclick="showView('config',this)">⚙️ Config</button>
   </nav>
   <button class="exit-btn" onclick="goBack()">Cambiar perfil</button>
 </header>
 
 <main>
 
-<!-- ââ FORMULARIO ââ -->
+<!-- ══ FORMULARIO ══ -->
 <div id="view-formulario" class="view active">
   <div id="alertBanner"></div>
 
   <div class="card">
-    <h2>ðª Paso 1 â IdentificaciÃ³n</h2>
+    <h2>🏪 Paso 1 — Identificación</h2>
     <div class="row-2">
       <div class="field">
         <label>Tienda *</label>
         <select id="fTienda" onchange="checkTodayStatus()">
-          <option value="">â Seleccionar tienda â</option>
+          <option value="">— Seleccionar tienda —</option>
         </select>
       </div>
       <div class="field">
@@ -219,40 +219,40 @@ main{max-width:1000px;margin:28px auto;padding:0 16px}
   </div>
 
   <div class="card">
-    <h2>ð Paso 2 â Cargar Planilla de Stock (exportaciÃ³n SAP)</h2>
+    <h2>📂 Paso 2 — Cargar Planilla de Stock (exportación SAP)</h2>
     <div class="ab info" style="margin-bottom:14px">
-      â¹ï¸ Sube la planilla con la hoja <strong>BASE</strong> â la misma que exportas desde SAP con la variante <strong>/FSINV</strong> transacciÃ³n <strong>ZMB52</strong>.
+      ℹ️ Sube la planilla con la hoja <strong>BASE</strong> — la misma que exportas desde SAP con la variante <strong>/FSINV</strong> transacción <strong>ZMB52</strong>.
     </div>
     <div class="upload-zone" id="uploadZone"
          onclick="document.getElementById('fileInput').click()"
          ondragover="event.preventDefault();this.classList.add('drag')"
          ondragleave="this.classList.remove('drag')"
          ondrop="handleDrop(event)">
-      <div class="uicon">ð</div>
-      <p><strong>Haz clic o arrastra</strong> la planilla de stock aquÃ­</p>
+      <div class="uicon">📊</div>
+      <p><strong>Haz clic o arrastra</strong> la planilla de stock aquí</p>
       <p style="margin-top:5px;font-size:.76rem">Archivo .xlsx exportado desde SAP</p>
     </div>
     <input type="file" id="fileInput" accept=".xlsx,.xls" onchange="handleFile(event)">
-    <div class="loader" id="fileLoader">â³ Procesando planillaâ¦</div>
+    <div class="loader" id="fileLoader">⏳ Procesando planilla…</div>
     <div id="fileStatus"></div>
   </div>
 
   <div id="catSection" style="display:none">
     <div class="card">
-      <h2>ðï¸ Paso 3 â Seleccionar CategorÃ­a del CÃ­clico</h2>
+      <h2>🗂️ Paso 3 — Seleccionar Categoría del Cíclico</h2>
       <p style="font-size:.83rem;color:var(--muted);margin-bottom:14px">
-        Selecciona la categorÃ­a a contar hoy. <strong>Vacuno Refrigerado y Vacuno Congelado</strong> se incluyen automÃ¡ticamente en todos los cÃ­clicos.
+        Selecciona la categoría a contar hoy. <strong>Vacuno Refrigerado y Vacuno Congelado</strong> se incluyen automáticamente en todos los cíclicos.
       </p>
       <div class="row-2">
         <div class="field">
-          <label>CategorÃ­a del cÃ­clico *</label>
+          <label>Categoría del cíclico *</label>
           <select id="fCategoria" onchange="loadSKUs()">
-            <option value="">â Seleccionar categorÃ­a â</option>
+            <option value="">— Seleccionar categoría —</option>
           </select>
         </div>
         <div class="field" style="display:flex;align-items:flex-end;gap:8px;flex-wrap:wrap">
-          <div class="badge badge-vacuno">ð¥© Vacuno Refrigerado â siempre incluido</div>
-          <div class="badge badge-vacuno">ð¥© Vacuno Congelado â siempre incluido</div>
+          <div class="badge badge-vacuno">🥩 Vacuno Refrigerado — siempre incluido</div>
+          <div class="badge badge-vacuno">🥩 Vacuno Congelado — siempre incluido</div>
         </div>
       </div>
     </div>
@@ -260,9 +260,9 @@ main{max-width:1000px;margin:28px auto;padding:0 16px}
 
   <div id="skuSection" style="display:none">
     <div class="card">
-      <h2>ð¢ Paso 4 â Ingresar Conteo FÃ­sico</h2>
+      <h2>🔢 Paso 4 — Ingresar Conteo Físico</h2>
       <p style="font-size:.83rem;color:var(--muted);margin-bottom:14px">
-        Ingresa la cantidad fÃ­sica encontrada para cada SKU. La diferencia se calcula automÃ¡ticamente: <span style="color:var(--danger);font-weight:700">negativo = faltante</span> Â· <span style="color:var(--success);font-weight:700">positivo = sobrante</span>.
+        Ingresa la cantidad física encontrada para cada SKU. La diferencia se calcula automáticamente: <span style="color:var(--danger);font-weight:700">negativo = faltante</span> · <span style="color:var(--success);font-weight:700">positivo = sobrante</span>.
       </p>
       <div class="summary-strip" id="summaryStrip">
         <div class="s-box"><div class="sv" id="sSKUs">0</div><div class="sl">SKUs totales</div></div>
@@ -274,9 +274,9 @@ main{max-width:1000px;margin:28px auto;padding:0 16px}
         <table class="sku-table">
           <thead>
             <tr>
-              <th>Material</th><th>DescripciÃ³n</th><th>CategorÃ­a</th><th>Familia</th><th>UM</th>
+              <th>Material</th><th>Descripción</th><th>Categoría</th><th>Familia</th><th>UM</th>
               <th style="text-align:right">Stock SAP</th><th style="text-align:right">Valor Unit. $</th>
-              <th style="text-align:center">Conteo FÃ­sico</th><th style="text-align:right">Dif. Unid.</th>
+              <th style="text-align:center">Conteo Físico</th><th style="text-align:right">Dif. Unid.</th>
               <th style="text-align:right">Dif. Valor $</th><th style="text-align:center">Estado</th>
             </tr>
           </thead>
@@ -286,7 +286,7 @@ main{max-width:1000px;margin:28px auto;padding:0 16px}
     </div>
 
     <div class="card">
-      <h2>âï¸ Paso 5 â Ajuste y ConfirmaciÃ³n</h2>
+      <h2>⚖️ Paso 5 — Ajuste y Confirmación</h2>
       <div class="row-3">
         <div class="field">
           <label>SKUs con diferencia</label>
@@ -307,7 +307,7 @@ main{max-width:1000px;margin:28px auto;padding:0 16px}
       </div>
       <div class="field">
         <label>Observaciones / Causas de diferencias</label>
-        <textarea id="fObservaciones" placeholder="Describe las causas principales de las diferencias encontradasâ¦"></textarea>
+        <textarea id="fObservaciones" placeholder="Describe las causas principales de las diferencias encontradas…"></textarea>
       </div>
       <div class="confirm-block">
         <input type="checkbox" id="fConfirm">
@@ -319,23 +319,23 @@ main{max-width:1000px;margin:28px auto;padding:0 16px}
     </div>
 
     <div class="form-actions">
-      <button class="btn btn-outline" onclick="resetForm()">ð Limpiar</button>
-      <button class="btn btn-accent" id="btnEnviar" onclick="submitForm()">â Enviar Registro</button>
+      <button class="btn btn-outline" onclick="resetForm()">🔄 Limpiar</button>
+      <button class="btn btn-accent" id="btnEnviar" onclick="submitForm()">✅ Enviar Registro</button>
     </div>
   </div>
 </div>
 
-<!-- ââ DASHBOARD ââ -->
+<!-- ══ DASHBOARD ══ -->
 <div id="view-dashboard" class="view">
   <div id="dashApiStatus"></div>
   <div class="store-tabs" id="storeTabs"></div>
   <div id="dashContent"><p style="color:var(--muted);text-align:center;padding:40px">Selecciona una tienda para ver su reporte.</p></div>
 </div>
 
-<!-- ââ CONFIG (solo supervisor) ââ -->
+<!-- ══ CONFIG (solo supervisor) ══ -->
 <div id="view-config" class="view">
   <div class="card">
-    <h2>ðª Tiendas</h2>
+    <h2>🏪 Tiendas</h2>
     <div id="storeList" style="margin-bottom:16px"></div>
     <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
       <div style="flex:1;min-width:140px">
@@ -350,19 +350,19 @@ main{max-width:1000px;margin:28px auto;padding:0 16px}
     </div>
   </div>
   <div class="card">
-    <h2>ð§ Alertas</h2>
+    <h2>📧 Alertas</h2>
     <div class="field">
       <label>Email supervisor (recibe todas las alertas)</label>
       <input type="text" id="cfgEmail" value="shenriquez@icbfs.cl" style="max-width:360px">
     </div>
     <div class="field">
-      <label>DÃ­as obligatorios</label>
-      <input type="text" value="Lunes, MiÃ©rcoles, Viernes" readonly style="background:#f5f5f5;max-width:260px">
+      <label>Días obligatorios</label>
+      <input type="text" value="Lunes, Miércoles, Viernes" readonly style="background:#f5f5f5;max-width:260px">
     </div>
-    <button class="btn btn-primary btn-sm" onclick="saveConfig()">Guardar configuraciÃ³n</button>
+    <button class="btn btn-primary btn-sm" onclick="saveConfig()">Guardar configuración</button>
   </div>
   <div class="card">
-    <h2>ð Seguridad</h2>
+    <h2>🔐 Seguridad</h2>
     <div class="row-2" style="max-width:480px">
       <div class="field">
         <label>PIN actual</label>
@@ -377,7 +377,7 @@ main{max-width:1000px;margin:28px auto;padding:0 16px}
     <p style="font-size:.76rem;color:var(--muted);margin-top:8px">PIN inicial: <code>1234</code></p>
   </div>
   <div class="card">
-    <h2>ð ConexiÃ³n SharePoint</h2>
+    <h2>🔗 Conexión SharePoint</h2>
     <div class="field">
       <label>URL del sitio SharePoint (SP_SITE)</label>
       <input type="text" id="cfgSpSite" style="font-size:.83rem;font-family:monospace">
@@ -386,13 +386,13 @@ main{max-width:1000px;margin:28px auto;padding:0 16px}
       <label>Nombre de la lista</label>
       <input type="text" id="cfgSpList" style="font-size:.83rem;font-family:monospace">
     </div>
-    <button class="btn btn-primary btn-sm" onclick="saveSpConfig()">Guardar conexiÃ³n</button>
-    <p style="font-size:.76rem;color:var(--muted);margin-top:8px">Los cambios aplican al recargar la pÃ¡gina.</p>
+    <button class="btn btn-primary btn-sm" onclick="saveSpConfig()">Guardar conexión</button>
+    <p style="font-size:.76rem;color:var(--muted);margin-top:8px">Los cambios aplican al recargar la página.</p>
   </div>
   <div class="card">
-    <h2>ðï¸ Zona de peligro</h2>
-    <p style="font-size:.83rem;color:var(--muted);margin-bottom:12px">Eliminar registros del cachÃ© local (los datos en SharePoint no se eliminan).</p>
-    <button class="btn btn-sm" style="background:#ffebee;color:var(--danger);border:1px solid #ef9a9a" onclick="clearAllData()">Borrar cachÃ© local</button>
+    <h2>🗑️ Zona de peligro</h2>
+    <p style="font-size:.83rem;color:var(--muted);margin-bottom:12px">Eliminar registros del caché local (los datos en SharePoint no se eliminan).</p>
+    <button class="btn btn-sm" style="background:#ffebee;color:var(--danger);border:1px solid #ef9a9a" onclick="clearAllData()">Borrar caché local</button>
   </div>
 </div>
 
@@ -402,10 +402,10 @@ main{max-width:1000px;margin:28px auto;padding:0 16px}
 <div id="toast"></div>
 
 <script>
-// ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-//  CONFIGURACIÃN BASE
+// ══════════════════════════════════════════════════════════════
+//  CONFIGURACIÓN BASE
 //  Si se actualiza desde Config, se guarda en localStorage
-// ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ══════════════════════════════════════════════════════════════
 const DEFAULT_SP_SITE = 'https://icbfsfood-my.sharepoint.com/personal/shenriquez_icbfs_cl';
 const DEFAULT_SP_LIST = 'CiclicosTiendas';
 const DEFAULT_PIN     = '1234';
@@ -420,16 +420,16 @@ function getSpConfig() {
 let SP_SITE = getSpConfig().site;
 let SP_LIST = getSpConfig().list;
 
-// ââ Constantes âââââââââââââââââââââââââââââââââââââââââââââââ
+// ── Constantes ───────────────────────────────────────────────
 const DIAS_OBL  = [1,3,5];
-const DIAS_N    = {1:'Lunes',3:'MiÃ©rcoles',5:'Viernes'};
+const DIAS_N    = {1:'Lunes',3:'Miércoles',5:'Viernes'};
 const CATS_VACUNO = ['VACUNO REFRIGERADO','VACUNO CONGELADO'];
 
-// ââ Estado âââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ── Estado ───────────────────────────────────────────────────
 let stockRows = [], categorias = [], currentSKUs = [];
 let currentRole = null;
 
-// ââ LocalStorage helpers âââââââââââââââââââââââââââââââââââââ
+// ── LocalStorage helpers ─────────────────────────────────────
 const LS = {
   stores:  () => JSON.parse(localStorage.getItem('ci_stores_v2')  || '[]'),
   records: () => JSON.parse(localStorage.getItem('ci_records') || '[]'),
@@ -438,9 +438,9 @@ const LS = {
   save:    (k,v) => localStorage.setItem(k, JSON.stringify(v))
 };
 
-// ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ══════════════════════════════════════════════════════════════
 //  PERFIL Y PIN
-// ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ══════════════════════════════════════════════════════════════
 function selectProfile(role) {
   if (role === 'jefe') {
     launchApp('jefe');
@@ -481,7 +481,7 @@ function launchApp(role) {
   document.getElementById('screen-pin').classList.remove('active');
   // Mostrar app
   document.getElementById('app').style.display = 'block';
-  // Configurar UI segÃºn rol
+  // Configurar UI según rol
   document.getElementById('roleBadge').textContent = role === 'supervisor' ? 'Supervisor' : 'Jefe de Tienda';
   document.getElementById('configNavBtn').style.display = role === 'supervisor' ? '' : 'none';
   // Init
@@ -493,26 +493,26 @@ function launchApp(role) {
 function changePIN() {
   const oldPin = document.getElementById('cfgPinOld').value;
   const newPin = document.getElementById('cfgPinNew').value.trim();
-  if (oldPin !== LS.pin()) { showToast('â PIN actual incorrecto'); return; }
-  if (!newPin || newPin.length < 4) { showToast('â ï¸ El PIN debe tener al menos 4 caracteres'); return; }
+  if (oldPin !== LS.pin()) { showToast('❌ PIN actual incorrecto'); return; }
+  if (!newPin || newPin.length < 4) { showToast('⚠️ El PIN debe tener al menos 4 caracteres'); return; }
   localStorage.setItem('ci_pin', newPin);
   document.getElementById('cfgPinOld').value = '';
   document.getElementById('cfgPinNew').value = '';
-  showToast('â PIN actualizado');
+  showToast('✅ PIN actualizado');
 }
 
 function saveSpConfig() {
   const site = document.getElementById('cfgSpSite').value.trim().replace(/\/$/, '');
   const list = document.getElementById('cfgSpList').value.trim();
-  if (!site || !list) { showToast('â ï¸ Completa URL y nombre de lista'); return; }
+  if (!site || !list) { showToast('⚠️ Completa URL y nombre de lista'); return; }
   localStorage.setItem('ci_sp_site', site);
   localStorage.setItem('ci_sp_list', list);
-  showToast('â Guardado â recarga la pÃ¡gina para aplicar');
+  showToast('✅ Guardado — recarga la página para aplicar');
 }
 
-// ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ══════════════════════════════════════════════════════════════
 //  API SHAREPOINT
-// ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ══════════════════════════════════════════════════════════════
 async function spDigest() {
   const r = await fetch(`${SP_SITE}/_api/contextinfo`, {
     method: 'POST',
@@ -588,14 +588,14 @@ const API = {
   }
 };
 
-// ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ══════════════════════════════════════════════════════════════
 //  INIT
-// ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ══════════════════════════════════════════════════════════════
 function init() {
   const TIENDAS = [
     {name:'Vitacura',     email:'mcastilla@icbfs.cl'},
     {name:'Valdivia',     email:'lpardo@icbfs.cl'},
-    {name:'ViÃ±a del Mar', email:'glillo@icbfs.cl'},
+    {name:'Viña del Mar', email:'glillo@icbfs.cl'},
     {name:'Calama',       email:'jvelasquez@icbfs.cl'},
     {name:'Antofagasta',  email:'cromero@icbfs.cl'}
   ];
@@ -621,26 +621,26 @@ function init() {
 
 function populateStoreSelect() {
   const sel = document.getElementById('fTienda');
-  sel.innerHTML = '<option value="">â Seleccionar tienda â</option>';
+  sel.innerHTML = '<option value="">— Seleccionar tienda —</option>';
   LS.stores().forEach(s => {
     const o = document.createElement('option');
     o.value = s.name; o.textContent = s.name; sel.appendChild(o);
   });
 }
 
-// ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ══════════════════════════════════════════════════════════════
 //  FORMULARIO
-// ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ══════════════════════════════════════════════════════════════
 async function checkTodayStatus() {
   const b = document.getElementById('alertBanner');
   const today = new Date(); const dow = today.getDay();
   const tienda = document.getElementById('fTienda').value;
 
   if (!DIAS_OBL.includes(dow)) {
-    b.innerHTML = `<div class="ab info">â¹ï¸ Hoy (<strong>${today.toLocaleDateString('es-CL',{weekday:'long'})}</strong>) no es dÃ­a de cÃ­clico. Los dÃ­as obligatorios son <strong>Lunes, MiÃ©rcoles y Viernes</strong>.</div>`; return;
+    b.innerHTML = `<div class="ab info">ℹ️ Hoy (<strong>${today.toLocaleDateString('es-CL',{weekday:'long'})}</strong>) no es día de cíclico. Los días obligatorios son <strong>Lunes, Miércoles y Viernes</strong>.</div>`; return;
   }
   if (!tienda) {
-    b.innerHTML = `<div class="ab warning">â ï¸ Hoy es <strong>${DIAS_N[dow]}</strong> â dÃ­a obligatorio. Selecciona tu tienda para continuar.</div>`; return;
+    b.innerHTML = `<div class="ab warning">⚠️ Hoy es <strong>${DIAS_N[dow]}</strong> — día obligatorio. Selecciona tu tienda para continuar.</div>`; return;
   }
 
   const ds = today.toISOString().split('T')[0];
@@ -660,8 +660,8 @@ async function checkTodayStatus() {
   }
 
   b.innerHTML = done
-    ? `<div class="ab success">â El cÃ­clico de <strong>${tienda}</strong> ya fue registrado hoy.</div>`
-    : `<div class="ab danger">ð¨ Hoy es <strong>${DIAS_N[dow]}</strong> â el cÃ­clico de <strong>${tienda}</strong> aÃºn <u>no ha sido completado</u>. Completa el formulario antes del cierre del dÃ­a.</div>`;
+    ? `<div class="ab success">✅ El cíclico de <strong>${tienda}</strong> ya fue registrado hoy.</div>`
+    : `<div class="ab danger">🚨 Hoy es <strong>${DIAS_N[dow]}</strong> — el cíclico de <strong>${tienda}</strong> aún <u>no ha sido completado</u>. Completa el formulario antes del cierre del día.</div>`;
 }
 
 function handleDrop(e) { e.preventDefault(); document.getElementById('uploadZone').classList.remove('drag'); if(e.dataTransfer.files[0]) processFile(e.dataTransfer.files[0]); }
@@ -686,9 +686,9 @@ function processFile(file) {
         material: findIdx(headers, ['Material','material']),
         desc:     findIdx(headers, ['Texto breve de material','Descripcion','descripcion','desc']),
         um:       findIdx(headers, ['UMSal','UM','Unidad']),
-        stock:    findIdx(headers, ['Libre utilizaciÃ³l\n SAP','Libre utilizaciÃ³n SAP','Stock SAP','stock sap','libre utilizaci']),
+        stock:    findIdx(headers, ['Libre utilizaciól\n SAP','Libre utilización SAP','Stock SAP','stock sap','libre utilizaci']),
         valUnit:  findIdx(headers, ['Valor Unitario','valor unitario','Precio']),
-        cat:      findIdx(headers, ['Categoria ','Categoria','CategorÃ­a','categorÃ­a']),
+        cat:      findIdx(headers, ['Categoria ','Categoria','Categoría','categoría']),
         familia:  findIdx(headers, ['Familia ','Familia','familia']),
         lote:     findIdx(headers, ['Lote Sap','lote sap','Lote SAP','LOTE SAP'])
       };
@@ -700,24 +700,24 @@ function processFile(file) {
         if (!mat || mat === 'Material') continue;
         stockRows.push({
           material: mat,
-          desc:     String(row[idx.desc] || 'â').trim(),
+          desc:     String(row[idx.desc] || '—').trim(),
           um:       String(row[idx.um] || '').trim(),
           stock:    parseFloat(row[idx.stock]) || 0,
           valUnit:  parseFloat(row[idx.valUnit]) || 0,
-          cat, familia: String(row[idx.familia] || 'â').trim().toUpperCase(),
+          cat, familia: String(row[idx.familia] || '—').trim().toUpperCase(),
           lote: String(row[idx.lote] || '').trim()
         });
       }
       const catSet = new Set(stockRows.map(r => r.cat).filter(c => c && !CATS_VACUNO.includes(c)));
       categorias = [...catSet].sort();
       const sel = document.getElementById('fCategoria');
-      sel.innerHTML = '<option value="">â Seleccionar categorÃ­a â</option>';
+      sel.innerHTML = '<option value="">— Seleccionar categoría —</option>';
       categorias.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c; sel.appendChild(o); });
       const vacunoCount = stockRows.filter(r => CATS_VACUNO.includes(r.cat)).length;
-      document.getElementById('fileStatus').innerHTML = `<div class="ab success" style="margin-top:12px">â Hoja BASE cargada â <strong>${stockRows.length} SKUs</strong> en <strong>${categorias.length}</strong> categorÃ­as + ${vacunoCount} SKUs de Vacuno (automÃ¡tico).</div>`;
+      document.getElementById('fileStatus').innerHTML = `<div class="ab success" style="margin-top:12px">✅ Hoja BASE cargada — <strong>${stockRows.length} SKUs</strong> en <strong>${categorias.length}</strong> categorías + ${vacunoCount} SKUs de Vacuno (automático).</div>`;
       document.getElementById('catSection').style.display = 'block';
     } catch(err) {
-      document.getElementById('fileStatus').innerHTML = `<div class="ab danger">â Error al leer la planilla: ${err.message}</div>`;
+      document.getElementById('fileStatus').innerHTML = `<div class="ab danger">❌ Error al leer la planilla: ${err.message}</div>`;
     }
     document.getElementById('fileLoader').classList.remove('show');
   };
@@ -796,11 +796,11 @@ function loadSKUs() {
   const repeatedCount = [...new Set(vacunoRows.filter(r=>r._repeated).map(r=>r.material))].length;
   const banner = document.createElement('div');
   banner.id = 'skuBanner';
-  const extraMsg = extraCats.length ? `<span class="tag warn" style="margin-left:6px">â ï¸ Se completÃ³ con: ${extraCats.join(', ')}</span>` : '';
+  const extraMsg = extraCats.length ? `<span class="tag warn" style="margin-left:6px">⚠️ Se completó con: ${extraCats.join(', ')}</span>` : '';
   banner.innerHTML = `<div class="ab ${extraCats.length?'warning':'info'}" style="margin-bottom:12px">
-    ð <strong>${uniqueMats} cÃ³digos de producto</strong> (${catRows.length} filas con lotes) + <strong>${vacunoTop.length} cortes vacuno</strong>${isAnto?' <span class="tag warn">Antofagasta</span>':''}.
+    📋 <strong>${uniqueMats} códigos de producto</strong> (${catRows.length} filas con lotes) + <strong>${vacunoTop.length} cortes vacuno</strong>${isAnto?' <span class="tag warn">Antofagasta</span>':''}.
     ${extraMsg}
-    ${repeatedCount>0?`<span style="color:var(--warning);margin-left:4px">â ï¸ ${repeatedCount} corte(s) vacuno ya contados esta semana.</span>`:'<span style="margin-left:4px">â Sin cortes vacuno repetidos.</span>'}
+    ${repeatedCount>0?`<span style="color:var(--warning);margin-left:4px">⚠️ ${repeatedCount} corte(s) vacuno ya contados esta semana.</span>`:'<span style="margin-left:4px">✅ Sin cortes vacuno repetidos.</span>'}
   </div>`;
   document.getElementById('skuSection').insertBefore(banner, document.getElementById('skuSection').firstChild);
 
@@ -811,10 +811,10 @@ function loadSKUs() {
       const sep = document.createElement('tr');
       sep.style.cssText = 'background:#f0f4ff';
       sep.innerHTML = `<td colspan="11" style="padding:6px 12px;font-size:.78rem;color:var(--primary);font-weight:700">
-        ð¦ ${sku.material} â ${sku.desc} &nbsp;Â·&nbsp;<span style="color:var(--muted)">Stock total sistema: <strong>${fmtN(sku._stockTotal)} ${sku.um}</strong> en ${sku._lotCount} lotes</span>
-        ${isVacuno?'<span class="badge badge-vacuno" style="margin-left:6px;font-size:.68rem">ð¥©</span>':''}
+        📦 ${sku.material} — ${sku.desc} &nbsp;·&nbsp;<span style="color:var(--muted)">Stock total sistema: <strong>${fmtN(sku._stockTotal)} ${sku.um}</strong> en ${sku._lotCount} lotes</span>
+        ${isVacuno?'<span class="badge badge-vacuno" style="margin-left:6px;font-size:.68rem">🥩</span>':''}
         ${isExtra?`<span class="tag warn" style="margin-left:4px;font-size:.68rem">complemento: ${sku.cat}</span>`:''}
-        ${sku._repeated?'<span class="tag warn" style="margin-left:4px;font-size:.68rem">â ï¸ ya contado esta semana</span>':''}
+        ${sku._repeated?'<span class="tag warn" style="margin-left:4px;font-size:.68rem">⚠️ ya contado esta semana</span>':''}
       </td>`;
       tbody.appendChild(sep);
     }
@@ -824,17 +824,17 @@ function loadSKUs() {
     if (isExtra) tr.style.background = '#fffbf0';
     if (sku._repeated) tr.style.opacity = '0.78';
     tr.innerHTML = `
-      <td style="padding-left:${multiLote?'22px':'10px'}"><code style="font-size:.76rem">${sku.material}</code>${multiLote?`<span style="font-size:.7rem;color:var(--muted)"> Â· ${sku.lote||'sin lote'}</span>`:''}</td>
-      <td style="max-width:200px;font-size:.83rem">${sku.desc}${isVacuno&&!multiLote?`<span class="badge badge-vacuno" style="font-size:.65rem;padding:1px 7px;margin-left:4px">ð¥©</span>`:''}${isExtra&&!multiLote?`<span class="tag warn" style="font-size:.68rem;margin-left:4px">complemento</span>`:''}</td>
+      <td style="padding-left:${multiLote?'22px':'10px'}"><code style="font-size:.76rem">${sku.material}</code>${multiLote?`<span style="font-size:.7rem;color:var(--muted)"> · ${sku.lote||'sin lote'}</span>`:''}</td>
+      <td style="max-width:200px;font-size:.83rem">${sku.desc}${isVacuno&&!multiLote?`<span class="badge badge-vacuno" style="font-size:.65rem;padding:1px 7px;margin-left:4px">🥩</span>`:''}${isExtra&&!multiLote?`<span class="tag warn" style="font-size:.68rem;margin-left:4px">complemento</span>`:''}</td>
       <td><span class="tag ${isVacuno?'warn':isExtra?'warn':'ok'}" style="font-size:.7rem">${sku.cat}</span></td>
       <td style="color:var(--muted);font-size:.78rem">${sku.familia}</td>
       <td style="text-align:center;color:var(--muted);font-size:.83rem">${sku.um}</td>
       <td style="text-align:right;font-weight:600;font-size:.85rem">${fmtN(sku.stock)}</td>
       <td style="text-align:right;color:var(--muted);font-size:.83rem">${fmtCLP(sku.valUnit)}</td>
-      <td style="text-align:center"><input class="cnt-input" type="number" min="0" step="0.001" id="cnt_${i}" placeholder="â" oninput="updDiff(${i})"></td>
-      <td style="text-align:right" id="difU_${i}" class="diff-zero">â</td>
-      <td style="text-align:right" id="difV_${i}" class="diff-zero">â</td>
-      <td style="text-align:center" id="est_${i}">â</td>`;
+      <td style="text-align:center"><input class="cnt-input" type="number" min="0" step="0.001" id="cnt_${i}" placeholder="—" oninput="updDiff(${i})"></td>
+      <td style="text-align:right" id="difU_${i}" class="diff-zero">—</td>
+      <td style="text-align:right" id="difV_${i}" class="diff-zero">—</td>
+      <td style="text-align:center" id="est_${i}">—</td>`;
     tbody.appendChild(tr);
   });
   document.getElementById('skuSection').style.display = 'block';
@@ -844,7 +844,7 @@ function loadSKUs() {
 function updDiff(i) {
   const val = parseFloat(document.getElementById(`cnt_${i}`).value);
   const difU = document.getElementById(`difU_${i}`), difV = document.getElementById(`difV_${i}`), est = document.getElementById(`est_${i}`);
-  if (isNaN(val)) { difU.textContent='â'; difU.className='diff-zero'; difV.textContent='â'; difV.className='diff-zero'; est.textContent='â'; updSummary(); return; }
+  if (isNaN(val)) { difU.textContent='—'; difU.className='diff-zero'; difV.textContent='—'; difV.className='diff-zero'; est.textContent='—'; updSummary(); return; }
   const sku = currentSKUs[i], du = val - sku.stock, dv = du * sku.valUnit;
   difU.textContent = fmtSignN(du); difU.className = du<0?'diff-neg':du>0?'diff-pos':'diff-zero';
   difV.textContent = fmtSignCLP(dv); difV.className = dv<0?'diff-neg':dv>0?'diff-pos':'diff-zero';
@@ -875,14 +875,14 @@ async function submitForm() {
   const observ = document.getElementById('fObservaciones').value.trim();
   const conf   = document.getElementById('fConfirm').checked;
 
-  if (!tienda)           { showToast('â ï¸ Selecciona una tienda'); return; }
-  if (!jefe)             { showToast('â ï¸ Ingresa el nombre del jefe de tienda'); return; }
-  if (!stockRows.length) { showToast('â ï¸ Carga la planilla de stock'); return; }
-  if (!cat)              { showToast('â ï¸ Selecciona una categorÃ­a'); return; }
+  if (!tienda)           { showToast('⚠️ Selecciona una tienda'); return; }
+  if (!jefe)             { showToast('⚠️ Ingresa el nombre del jefe de tienda'); return; }
+  if (!stockRows.length) { showToast('⚠️ Carga la planilla de stock'); return; }
+  if (!cat)              { showToast('⚠️ Selecciona una categoría'); return; }
   const conteos = currentSKUs.map((_,i) => parseFloat(document.getElementById(`cnt_${i}`)?.value));
-  if (conteos.every(isNaN))  { showToast('â ï¸ Ingresa al menos un conteo fÃ­sico'); return; }
-  if (monto === '')           { showToast('â ï¸ Ingresa el monto del ajuste (puede ser 0)'); return; }
-  if (!conf)                  { showToast('â ï¸ Confirma que el ajuste fue registrado en SAP'); return; }
+  if (conteos.every(isNaN))  { showToast('⚠️ Ingresa al menos un conteo físico'); return; }
+  if (monto === '')           { showToast('⚠️ Ingresa el monto del ajuste (puede ser 0)'); return; }
+  if (!conf)                  { showToast('⚠️ Confirma que el ajuste fue registrado en SAP'); return; }
 
   const now = new Date();
   let faltante=0, sobrante=0, conDiff=0;
@@ -902,18 +902,18 @@ async function submitForm() {
   };
 
   const btn = document.getElementById('btnEnviar');
-  btn.disabled = true; btn.textContent = 'â³ Enviandoâ¦';
+  btn.disabled = true; btn.textContent = '⏳ Enviando…';
 
   try {
     await API.saveRecord(record);
     const records = LS.records(); records.push(record); LS.save('ci_records', records);
-    showToast('â CÃ­clico registrado exitosamente');
+    showToast('✅ Cíclico registrado exitosamente');
   } catch(err) {
-    console.warn('API no disponible â guardando localmente:', err.message);
+    console.warn('API no disponible — guardando localmente:', err.message);
     const records = LS.records(); records.push(record); LS.save('ci_records', records);
-    showToast('â ï¸ Sin conexiÃ³n â guardado localmente');
+    showToast('⚠️ Sin conexión — guardado localmente');
   } finally {
-    btn.disabled = false; btn.textContent = 'â Enviar Registro';
+    btn.disabled = false; btn.textContent = '✅ Enviar Registro';
   }
 
   checkTodayStatus();
@@ -931,9 +931,9 @@ function resetForm() {
   document.getElementById('skuSection').style.display = 'none';
 }
 
-// ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ══════════════════════════════════════════════════════════════
 //  DASHBOARD
-// ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ══════════════════════════════════════════════════════════════
 function renderStoreTabs() {
   const tabs = document.getElementById('storeTabs'); tabs.innerHTML = '';
   LS.stores().forEach((s,i) => {
@@ -952,11 +952,11 @@ function getWeekDays() {
   const toStr=d=>d.toISOString().split('T')[0];
   const wed=new Date(mon); wed.setDate(mon.getDate()+2);
   const fri=new Date(mon); fri.setDate(mon.getDate()+4);
-  return {weekStart:toStr(mon),weekEnd:toStr(fri),weekDays:[{name:'Lunes',date:toStr(mon)},{name:'MiÃ©rcoles',date:toStr(wed)},{name:'Viernes',date:toStr(fri)}]};
+  return {weekStart:toStr(mon),weekEnd:toStr(fri)weekDays:[{name:'Lunes',date:toStr(mon)},{name:'Miécoles',date:toStr(wed)},{name:'Viernes',date:toStr(fri)}]};
 }
 
 async function renderDashboard(tienda) {
-  document.getElementById('dashContent').innerHTML = '<p style="color:var(--muted);text-align:center;padding:40px">â³ Cargando datosâ¦</p>';
+  document.getElementById('dashContent').innerHTML = '<p style="color:var(--muted);text-align:center;padding:40px">⏳ Cargando datos…</p>';
 
   let records, fromApi=true;
   try {
@@ -967,126 +967,104 @@ async function renderDashboard(tienda) {
   } catch(e) {
     records = LS.records().filter(r => r.tienda === tienda);
     fromApi = false;
-    document.getElementById('dashApiStatus').innerHTML = `<div class="ab warning">â ï¸ Sin conexiÃ³n a la nube â mostrando cachÃ© local.</div>`;
+    document.getElementById('dashApiStatus').innerHTML = `<div class="ab warning">⚠️ Sin conexión a la nube — mostrando caché local.</div>`;
   }
 
   records = records.sort((a,b) => b.fecha.localeCompare(a.fecha));
   const {weekStart,weekEnd,weekDays} = getWeekDays();
   const wRecs     = records.filter(r => r.fecha >= weekStart && r.fecha <= weekEnd);
   const cum       = Math.round((wRecs.length/3)*100);
-  const totalFalt = records.reduce((s,r)=>s+r.totalFaltante,0);
+  const totalFalt = records.reduce((s,r)=>s+ar.totalFaltante,0);
   const today     = new Date().toISOString().split('T')[0];
 
   document.getElementById('dashContent').innerHTML = `
     <div class="stat-row">
-      <div class="stat-box"><div class="val">${wRecs.length}/3</div><div class="lbl">CÃ­clicos esta semana</div></div>
+      <div class="stat-box"><div class="val">${wRecs.length}/3</div><div class="lbl">Cíclicos esta semana</div></div>
       <div class="stat-box"><div class="val" style="color:${cum===100?'var(--success)':cum>=66?'var(--warning)':'var(--danger)'}">${cum}%</div><div class="lbl">Cumplimiento semanal</div></div>
-      <div class="stat-box"><div class="val" style="color:var(--danger)">${fmtCLP(totalFalt)}</div><div class="lbl">Faltante histÃ³rico total</div></div>
+      <div class="stat-box"><div class="val" style="color:var(--danger)">${fmtCLP(totalFalt)}</div><div class="lbl">Faltante histórico total</div></div>
     </div>
     <div class="card">
-      <h2>ð Semana actual â ${weekStart} â ${weekEnd}</h2>
+      <h2>📅 Semana actual — ${weekStart} → ${weekEnd}</h2>
       <div class="week-grid">
-        ${weekDays.map(d=>{
-          const rec=wRecs.find(r=>r.fecha===d.date), isPast=d.date<=today, cls=rec?'done':(isPast?'missing':'pending');
-          return `<div class="day-cell ${cls}">
-            <div class="dn">${d.name}</div>
-            <div class="di">${rec?'â':(isPast?'â':'â³')}</div>
-            <div class="dl">${rec?`${rec.hora} Â· ${rec.cat}`:(isPast?'No completado':'Pendiente')}</div>
-            ${rec?`<div style="margin-top:6px;font-size:.76rem;color:var(--danger)">${fmtCLP(rec.totalFaltante)} faltante</div>`:''}
-          </div>`;
-        }).join('')}
-      </div>
-      ${currentRole==='supervisor'&&wRecs.length<3?`<div style="margin-top:14px"><button class="btn btn-sm" style="background:#ffebee;color:var(--danger);border:1px solid #ef9a9a" onclick="sendAlert('${tienda}')">ð§ Enviar alerta de incumplimiento</button></div>`:''}
-    </div>
-    <div class="card">
-      <h2>ð Historial de cÃ­clicos â ${tienda}</h2>
-      ${!records.length?'<p style="color:var(--muted);font-size:.85rem">Sin registros aÃºn.</p>':`
-      <div style="overflow-x:auto">
-        <table class="hist-table">
-          <thead><tr><th>Fecha</th><th>DÃ­a</th><th>Hora</th><th>Jefe</th><th>CategorÃ­a</th><th>SKUs</th><th>Con dif.</th><th>Faltante $</th><th>Sobrante $</th><th>Ajuste $</th><th>SAP</th></tr></thead>
-          <tbody>
-            ${records.slice(0,30).map(r=>{
-              const d=new Date(r.fecha+'T12:00:00'), dn=['Dom','Lun','Mar','MiÃ©','Jue','Vie','SÃ¡b'][d.getDay()], ob=DIAS_OBL.includes(d.getDay());
-              return `<tr>
-                <td>${r.fecha}</td>
-                <td>${dn}${ob?' <span class="tag ok">â</span>':''}</td>
-                <td>${r.hora}</td><td>${r.jefe}</td><td>${r.cat}</td>
-                <td>${r.totalSKUs}</td>
-                <td>${r.conDiff>0?`<span class="tag alerta">${r.conDiff}</span>`:'<span class="tag ok">0</span>'}</td>
-                <td style="color:var(--danger);font-weight:700">${fmtCLP(r.totalFaltante||0)}</td>
-                <td style="color:var(--success);font-weight:700">${fmtCLP(r.totalSobrante||0)}</td>
-                <td>${fmtCLP(r.monto)}</td>
-                <td>${r.ajusteConfirmado?'â':'â'}</td>
-              </tr>`;
-            }).join('')}
-          </tbody>
-        </table>
-      </div>`}
-    </div>`;
-}
+  	��YZ�^\˛X\
+O��ۜ��X�]ԙX�˙�[�
+�O����X�OOOY�]JK\�\�Y�]O]�^K��\�X���ۙIΊ\�\���Z\��[��Ή�[�[���N�]\��]��\��H�^KX�[	���H���]��\��H�������[Y_O�]���]��\��H�H��ܙX����!IΊ\�\����c	Ή�����_O�]���]��\��H���ܙX��	ܙX˚ܘ_H0��	ܙX˘�]X�\�\��ӛ���\]Y�Ή�[�Y[�I�_O�]���	ܙX��]��[OH�X\��[�]���ٛ۝\�^�N��͜�[N���܎��\�KY[��\�H��ٛ]�
+�X˝�[�[[�J_H�[[�O�]�����B��]��JK���[�	��_B��]���	��\��[���OOOI��\\��\�܉ɉ�ԙX�˛[����]��[OH�X\��[�]��M���]ۈ�\��H�����\�H��[OH��X��ܛ�[��ٙ�X�YN���܎��\�KY[��\�N؛ܙ\��\��Y�Y�XNXH�ۘ�X��H��[�[\�
+	��Y[�_I�H��'���[��X\�[\�HH[��[\[ZY[��؝]ۏ��]�����B��]���]��\��H��\������'���\�ܚX[H��X�X���8�%	�Y[�_O����	�\�X�ܙ˛[�����[OH���܎��\�K[]]Y
+Nٛ۝\�^�N��
+\�[H���[��Y�\����p���Θ�]��[OH�ݙ\����^�]]ȏ��X�H�\��H�\�]X�H���XY�����X�O���0�XO���ܘO����Y�O����]Y�ܰ�XO�����\�����ۈY������[[�H	����؜�[�H	���Z�\�H	����T������XY����O��	ܙX�ܙ˜�X�J�
+K�X\
+�O��ۜ�[�]�]J���X�J��L���	�K�V���I�	�[��	�X\��	�Zp�I�	ҝYI�	՚YI�	���X��V���]^J
+WK؏QPT��Г�[��Y\���]^J
+JN�]\������܋��X�_O������I�؏���[��\��H�Y��ȏ��$���[��Ή��O����܋�ܘ_O���܋��Y�_O���܋��]O����܋��[��\�O����܋��ۑY�����[��\��H�Y�[\�H��܋��ۑY��O��[�����[��\��H�Y��ȏ���[���O����[OH���܎��\�KY[��\�Nٛ۝]�ZY�����ٛ]�
+���[�[[�_
+_O����[OH���܎��\�K\�X��\��Nٛ۝]�ZY�����ٛ]�
+���[�؜�[�_
+_O����ٛ]�
+��[۝�_O����܋�Z�\�P�ۙ�\�XY����!IΉ��%	�O������JK���[�	��_B����O���X�O���]��B��]��B���[��[ۈ�[�[\�
+Y[�JH�ۜ�ٙ�S˘�ۙ�Y�
+N��ۜ��ܙOS˜�ܙ\�
+K��[�
+�O�˛�[YOOO]Y[�JN�ۜ��^O[�]�]J
+K��T����[��
+K��]
+	�	�V�N�ۜ��X��Y[���UT�P��\ۙ[�
+�ST�WH��X�X��[�Y[�H8�%	�Y[�_H8�%	��^_X
+N�ۜ���OY[���UT�P��\ۙ[�
+\�[XY��K��HY[�H��Y[�_H�Y[�H��X�X���[�Y[�\�\�H�[X[�H
+	��^_JK��܈�]�܈��\]\�[�ܛ][\�[�HH��]�YY����\�[XHH�۝��H��X�X���8�%PБ��
+N�ۜ��Y[���UT�P��\ۙ[�
+	�ٙ˙[XZ[I��ܙO��	���ܙK�[XZ[���X
+N�[��˛�[�XZ[Ή��O��X��X�I��X��I���OI؛�_X	�؛[���NB����8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d����ӑ�Q��8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d��[��[ۈ�[�\��ۙ�Y��ܙ\�
+H�ۜ�\�Y��[Y[���][[Y[��RY
+	��ܙS\�	�N��ۜ��ܙ\�S˜�ܙ\�
+NY�
+\�ܙ\˛[��
+H�\��[��\�SI��[OH���܎��\�K[]]Y
+Nٛ۝\�^�N��ܙ[H����^HY[�\ˏ�����]\���B�\��[��\�S\�ܙ\˛X\
 
-function sendAlert(tienda) {
-  const cfg=LS.config(); const store=LS.stores().find(s=>s.name===tienda);
-  const today=new Date().toISOString().split('T')[0];
-  const subj=encodeURIComponent(`[ALERTA] CÃ­clico pendiente â ${tienda} â ${today}`);
-  const body=encodeURIComponent(`Estimado/a,\n\nLa tienda "${tienda}" tiene cÃ­clicos pendientes esta semana (${today}).\nPor favor completar el formulario a la brevedad.\n\nSistema de Control de CÃ­clicos â ICBFS`);
-  const to=encodeURIComponent(`${cfg.email}${store?','+store.email:''}`);
-  window.open(`mailto:${to}?subject=${subj}&body=${body}`,'_blank');
-}
+�JOO��]��[OH�\�^N��^�[YۋZ][\Θ�[�\���\�L��Y[�ΌL؛ܙ\�X���N�\��Y�\�KX�ܙ\�H����[��[OH��۝]�ZY���ٛ^�H��'��	�˛�[Y_O��[����[��[OH���܎��\�K[]]Y
+Nٛ۝\�^�N��ܙ[Nٛ^�K�H���"{�#�	�˙[XZ[O��[����]ۈ�\��H�����\�H��[OH��X��ܛ�[��ٙ�X�YN���܎��\�KY[��\�N؛ܙ\��\��Y�Y�XNXH�ۘ�X��H��[[ݙT�ܙJ	�_JH��[[Z[�\�؝]ۏ���]��
+K���[�	��NB���[��[ۈY�ܙJ
+H�ۜ��[YOY��[Y[���][[Y[��RY
+	ۙ]��ܙS�[YI�K��[YK��[J
+K[XZ[Y��[Y[���][[Y[��RY
+	ۙ]��ܙQ[XZ[	�K��[YK��[J
+NY�[�[Y_Y[XZ[
+^�����\�
+	���;�#�[�ܙ\�H��X��HH[XZ[	�Nܙ]\���B��ۜ��ܙ\�S˜�ܙ\�
+NY��ܙ\˙�[�
+�O�˛�[YOOO[�[YJJ^�����\�
+	���;�#�XH^\�H\�HY[�I�Nܙ]\���B��ܙ\˜\�
+ۘ[YK[XZ[JN�˜�]�J	��W��ܙ\�݌���ܙ\�N��[Y[���][[Y[��RY
+	ۙ]��ܙS�[YI�K��[YOI�����[Y[���][[Y[��RY
+	ۙ]��ܙQ[XZ[	�K��[YOI���[�\��ۙ�Y��ܙ\�
+N��[]T�ܙT�[X�
 
-// ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-//  CONFIG
-// ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-function renderConfigStores() {
-  const list=document.getElementById('storeList'); const stores=LS.stores();
-  if (!stores.length) { list.innerHTML='<p style="color:var(--muted);font-size:.83rem">No hay tiendas.</p>'; return; }
-  list.innerHTML=stores.map((s,i)=>`
-    <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">
-      <span style="font-weight:700;flex:1">ðª ${s.name}</span>
-      <span style="color:var(--muted);font-size:.83rem;flex:1.5">âï¸ ${s.email}</span>
-      <button class="btn btn-sm" style="background:#ffebee;color:var(--danger);border:1px solid #ef9a9a" onclick="removeStore(${i})">Eliminar</button>
-    </div>`).join('');
-}
+N��[�\��ܙUX��
+N�����\�
+	��!HY[�HYܙY�YI�NB���[��[ۈ�[[ݙT�ܙJJHY�X�ۙ�\�J	��[[Z[�\�\�HY[�O��J\�]\���ۜ��ܙ\�S˜�ܙ\�
+N��ܙ\˜�X�JKJN�˜�]�J	��W��ܙ\�݌���ܙ\�N�[�\��ۙ�Y��ܙ\�
+N��[]T�ܙT�[X�
 
-function addStore() {
-  const name=document.getElementById('newStoreName').value.trim(), email=document.getElementById('newStoreEmail').value.trim();
-  if(!name||!email){showToast('â ï¸ Ingresa nombre y email');return;}
-  const stores=LS.stores();
-  if(stores.find(s=>s.name===name)){showToast('â ï¸ Ya existe esa tienda');return;}
-  stores.push({name,email}); LS.save('ci_stores_v2',stores);
-  document.getElementById('newStoreName').value=''; document.getElementById('newStoreEmail').value='';
-  renderConfigStores(); populateStoreSelect(); renderStoreTabs(); showToast('â Tienda agregada');
-}
-
-function removeStore(i) {
-  if(!confirm('Â¿Eliminar esta tienda?'))return;
-  const stores=LS.stores(); stores.splice(i,1); LS.save('ci_stores_v2',stores);
-  renderConfigStores(); populateStoreSelect(); renderStoreTabs(); showToast('Tienda eliminada');
-}
-
-function saveConfig() {
-  LS.save('ci_config',{email:document.getElementById('cfgEmail').value.trim()});
-  showToast('â ConfiguraciÃ³n guardada');
-}
-
-function clearAllData() {
-  if(!confirm('Â¿Borrar el cachÃ© local? Los datos en SharePoint no se eliminan.'))return;
-  localStorage.removeItem('ci_records');
-  showToast('CachÃ© local eliminado');
-  renderDashboard(LS.stores()[0]?.name);
-}
-
-// ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-//  UI HELPERS
-// ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
-function showView(name,btn) {
-  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-  document.getElementById('view-'+name).classList.add('active');
-  document.querySelectorAll('#mainNav button').forEach(b=>b.classList.remove('active'));
-  if(btn) btn.classList.add('active');
-  if(name==='dashboard') renderStoreTabs();
-  if(name==='config') renderConfigStores();
-}
-
-function showToast(msg) {
-  const t=document.getElementBy
+N��[�\��ܙUX��
+N�����\�
+	�Y[�H[[Z[�YI�NB���[��[ۈ�]�P�ۙ�Y�
+H˜�]�J	��W��ۙ�Y���[XZ[���[Y[���][[Y[��RY
+	�ٙ�[XZ[	�K��[YK��[J
+_JN����\�
+	��!H�ۙ�Y�\�X�p�ۈ�X\�YI�NB���[��[ۈ�X\�[]J
+HY�X�ۙ�\�J	�Лܜ�\�[�X�0�H��[���]��[��\�T�[����H[[Z[�[���J\�]\����[�ܘY�K��[[ݙR][J	��WܙX�ܙ��N����\�
+	��X�0�H��[[[Z[�Y��N�[�\�\���\�
+˜�ܙ\�
+V�O˛�[YJNB����8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d���RHST���8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d��[��[ۈ��՚Y]��[YK��H��[Y[��]Y\�T�[X�ܐ[
+	˝�Y]��K��ܑXX�
+�O����\��\���[[ݙJ	�X�]�I�JN��[Y[���][[Y[��RY
+	ݚY]�I�ۘ[YJK��\��\��Y
+	�X�]�I�N��[Y[��]Y\�T�[X�ܐ[
+	��XZ[��]��]ۉ�K��ܑXX�
+�O����\��\���[[ݙJ	�X�]�I�JNY���H����\��\��Y
+	�X�]�I�NY��[YOOOI�\���\�	�H�[�\��ܙUX��
+NY��[YOOOI��ۙ�Y��H�[�\��ۙ�Y��ܙ\�
+NB���[��[ۈ����\�
+\��H�ۜ�Y��[Y[���][[Y[��
