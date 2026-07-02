@@ -377,21 +377,17 @@ main{max-width:1000px;margin:28px auto;padding:0 16px}
     <p style="font-size:.76rem;color:var(--muted);margin-top:8px">PIN inicial: <code>1234</code></p>
   </div>
   <div class="card">
-    <h2>🔗 Conexión SharePoint</h2>
+    <h2>🔗 Conexión Google Apps Script</h2>
     <div class="field">
-      <label>URL del sitio SharePoint (SP_SITE)</label>
-      <input type="text" id="cfgSpSite" style="font-size:.83rem;font-family:monospace">
+      <label>URL del Web App (Apps Script)</label>
+      <input type="text" id="cfgScriptUrl" placeholder="https://script.google.com/macros/s/…/exec" style="font-size:.83rem;font-family:monospace">
     </div>
-    <div class="field">
-      <label>Nombre de la lista</label>
-      <input type="text" id="cfgSpList" style="font-size:.83rem;font-family:monospace">
-    </div>
-    <button class="btn btn-primary btn-sm" onclick="saveSpConfig()">Guardar conexión</button>
-    <p style="font-size:.76rem;color:var(--muted);margin-top:8px">Los cambios aplican al recargar la página.</p>
+    <button class="btn btn-primary btn-sm" onclick="saveScriptUrl()">Guardar conexión</button>
+    <p style="font-size:.76rem;color:var(--muted);margin-top:8px">Obtén la URL desplegando el script como Web App en Google Apps Script.</p>
   </div>
   <div class="card">
     <h2>🗑️ Zona de peligro</h2>
-    <p style="font-size:.83rem;color:var(--muted);margin-bottom:12px">Eliminar registros del caché local (los datos en SharePoint no se eliminan).</p>
+    <p style="font-size:.83rem;color:var(--muted);margin-bottom:12px">Eliminar registros del caché local (los datos en Google Sheets no se eliminan).</p>
     <button class="btn btn-sm" style="background:#ffebee;color:var(--danger);border:1px solid #ef9a9a" onclick="clearAllData()">Borrar caché local</button>
   </div>
 </div>
@@ -406,26 +402,19 @@ main{max-width:1000px;margin:28px auto;padding:0 16px}
 //  CONFIGURACIÓN BASE
 //  Si se actualiza desde Config, se guarda en localStorage
 // ══════════════════════════════════════════════════════════════
-const DEFAULT_SP_SITE = 'https://icbfsfood-my.sharepoint.com/personal/shenriquez_icbfs_cl';
-const DEFAULT_SP_LIST = 'CiclicosTiendas';
-const DEFAULT_PIN     = '1234';
+const DEFAULT_SCRIPT_URL = '';
+const DEFAULT_PIN        = '1234';
 
-function getSpConfig() {
-  return {
-    site: localStorage.getItem('ci_sp_site') || DEFAULT_SP_SITE,
-    list: localStorage.getItem('ci_sp_list') || DEFAULT_SP_LIST
-  };
+function getScriptUrl() {
+  return localStorage.getItem('ci_script_url') || DEFAULT_SCRIPT_URL;
 }
-
-let SP_SITE = getSpConfig().site;
-let SP_LIST = getSpConfig().list;
 
 // ── Constantes ───────────────────────────────────────────────
 const DIAS_OBL  = [1,3,5];
 const DIAS_N    = {1:'Lunes',3:'Miércoles',5:'Viernes'};
 const CATS_VACUNO = ['VACUNO REFRIGERADO','VACUNO CONGELADO'];
 
-// ── Estado ───────────────────────────────────────────────────
+// ── Estado ──────────────────────────────────────────────────
 let stockRows = [], categorias = [], currentSKUs = [];
 let currentRole = null;
 
@@ -501,90 +490,37 @@ function changePIN() {
   showToast('✅ PIN actualizado');
 }
 
-function saveSpConfig() {
-  const site = document.getElementById('cfgSpSite').value.trim().replace(/\/$/, '');
-  const list = document.getElementById('cfgSpList').value.trim();
-  if (!site || !list) { showToast('⚠️ Completa URL y nombre de lista'); return; }
-  localStorage.setItem('ci_sp_site', site);
-  localStorage.setItem('ci_sp_list', list);
-  showToast('✅ Guardado — recarga la página para aplicar');
+function saveScriptUrl() {
+  const url = document.getElementById('cfgScriptUrl').value.trim().replace(/\/$/, '');
+  if (!url) { showToast('⚠️ Ingresa la URL del Web App'); return; }
+  localStorage.setItem('ci_script_url', url);
+  showToast('✅ URL guardada');
 }
 
 // ══════════════════════════════════════════════════════════════
-//  API SHAREPOINT
+//  API GOOGLE APPS SCRIPT
 // ══════════════════════════════════════════════════════════════
-async function spDigest() {
-  const r = await fetch(`${SP_SITE}/_api/contextinfo`, {
-    method: 'POST',
-    headers: { 'Accept': 'application/json;odata=nometadata' }
-  });
-  const d = await r.json();
-  return d.FormDigestValue;
-}
-
-function fromSP(it) {
-  return {
-    id:              it.RegistroId,
-    tienda:          it.Tienda,
-    fecha:           it.Fecha,
-    hora:            it.Hora  || '',
-    jefe:            it.Jefe  || '',
-    cat:             it.Categoria || '',
-    monto:           it.Monto || 0,
-    observaciones:   it.Observaciones || '',
-    ajusteConfirmado:true,
-    conDiff:         it.ConDiff       || 0,
-    totalFaltante:   it.TotalFaltante || 0,
-    totalSobrante:   it.TotalSobrante || 0,
-    totalSKUs:       it.TotalSKUs     || 0,
-    items:           (() => { try { return JSON.parse(it.ItemsJSON || '[]'); } catch(e) { return []; } })()
-  };
-}
-
 const API = {
   async getRecords(tienda = null) {
-    const filter = tienda ? `&$filter=Tienda eq '${tienda.replace(/'/g,"''")}'` : '';
-    const url = `${SP_SITE}/_api/web/lists/GetByTitle('${SP_LIST}')/items`
-      + `?$select=RegistroId,Tienda,Fecha,Hora,Jefe,Categoria,Monto,Observaciones,ConDiff,TotalFaltante,TotalSobrante,TotalSKUs,ItemsJSON`
-      + `&$top=500&$orderby=Created%20desc${filter}`;
-    const r = await fetch(url, {
-      headers: { 'Accept': 'application/json;odata=nometadata' }
-    });
+    const url = getScriptUrl();
+    if (!url) return [];
+    const endpoint = tienda ? `${url}?tienda=${encodeURIComponent(tienda)}` : url;
+    const r = await fetch(endpoint);
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
-    const d = await r.json();
-    return d.value.map(fromSP);
+    const data = await r.json();
+    if (data.error) throw new Error(data.error);
+    return Array.isArray(data) ? data : [];
   },
 
   async saveRecord(record) {
-    const digest = await spDigest();
-    const body = JSON.stringify({
-      '__metadata': { 'type': `SP.Data.${SP_LIST}ListItem` },
-      Title:         `${record.tienda}_${record.fecha}_${record.id}`,
-      RegistroId:    String(record.id || Date.now()),
-      Tienda:        record.tienda,
-      Fecha:         record.fecha,
-      Hora:          record.hora          || '',
-      Jefe:          record.jefe          || '',
-      Categoria:     record.cat           || '',
-      Monto:         record.monto         || 0,
-      Observaciones: record.observaciones || '',
-      ConDiff:       record.conDiff       || 0,
-      TotalFaltante: record.totalFaltante || 0,
-      TotalSobrante: record.totalSobrante || 0,
-      TotalSKUs:     record.totalSKUs     || 0,
-      ItemsJSON:     JSON.stringify(record.items || [])
-    });
-    const r = await fetch(`${SP_SITE}/_api/web/lists/GetByTitle('${SP_LIST}')/items`, {
-      method: 'POST',
-      headers: {
-        'Accept':          'application/json;odata=nometadata',
-        'Content-Type':    'application/json;odata=verbose',
-        'X-RequestDigest': digest
-      },
-      body
-    });
+    const url = getScriptUrl();
+    if (!url) throw new Error('URL de Apps Script no configurada. Ve a Config → Conexión Google Apps Script y pega la URL del Web App.');
+    const body = new URLSearchParams({ data: JSON.stringify(record) });
+    const r = await fetch(url, { method: 'POST', body });
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
-    return r.json();
+    const data = await r.json();
+    if (data.error) throw new Error(data.error);
+    return data;
   }
 };
 
@@ -610,10 +546,9 @@ function init() {
   // Conservar tiendas adicionales que el usuario haya agregado manualmente
   const extra = stored.filter(s => !TIENDAS.find(d => d.name === s.name));
   LS.save('ci_stores_v2', [...merged, ...extra]);
-  // Actualizar SP config en campos de config
-  document.getElementById('cfgSpSite').value = SP_SITE;
-  document.getElementById('cfgSpList').value = SP_LIST;
-  document.getElementById('cfgEmail').value  = LS.config().email || 'shenriquez@icbfs.cl';
+  // Actualizar campos de config
+  document.getElementById('cfgScriptUrl').value = getScriptUrl();
+  document.getElementById('cfgEmail').value     = LS.config().email || 'shenriquez@icbfs.cl';
   document.getElementById('fFecha').value    = new Date().toLocaleDateString('es-CL',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
   populateStoreSelect();
   checkTodayStatus();
@@ -824,7 +759,7 @@ function loadSKUs() {
     if (isExtra) tr.style.background = '#fffbf0';
     if (sku._repeated) tr.style.opacity = '0.78';
     tr.innerHTML = `
-      <td style="padding-left:${multiLote?'22px':'10px'}"><code style="font-size:.76rem">${sku.material}</code>${multiLote?`<span style="font-size:.7rem;color:var(--muted)"> · ${sku.lote||'sin lote'}</span>`:''}</td>
+      <td style="padding-left:${multiLote?'22px':'10px'}"><code style="font-size:.76rem">${sku.material}</code>${multiLote?`<span style="font-size:.7rem;color:var(--muted)"> ½ ${sku.lote||'sin lote'}</span>`:''}</td>
       <td style="max-width:200px;font-size:.83rem">${sku.desc}${isVacuno&&!multiLote?`<span class="badge badge-vacuno" style="font-size:.65rem;padding:1px 7px;margin-left:4px">🥩</span>`:''}${isExtra&&!multiLote?`<span class="tag warn" style="font-size:.68rem;margin-left:4px">complemento</span>`:''}</td>
       <td><span class="tag ${isVacuno?'warn':isExtra?'warn':'ok'}" style="font-size:.7rem">${sku.cat}</span></td>
       <td style="color:var(--muted);font-size:.78rem">${sku.familia}</td>
@@ -862,7 +797,7 @@ function updSummary() {
   document.getElementById('sContados').textContent = contados;
   document.getElementById('sFaltante').textContent = fmtCLP(Math.abs(faltante));
   document.getElementById('sSobrante').textContent = fmtCLP(sobrante);
-  document.getElementById('fDiffCount').value      = conDiff ? `${conDiff} SKU(s)` : 'Sin diferencias';
+  document.getEllementById('fDiffCount').value      = conDiff ? `${conDiff} SKU(s)` : 'Sin diferencias';
   document.getElementById('fTotalFaltante').value  = fmtCLP(Math.abs(faltante));
   document.getElementById('fTotalSobrante').value  = fmtCLP(sobrante);
 }
@@ -896,7 +831,7 @@ async function submitForm() {
     id: Date.now(), tienda, jefe, cat,
     fecha: now.toISOString().split('T')[0],
     hora:  now.toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'}),
-    monto: parseFloat(monto)||0, observaciones:observ, ajusteConfirmado:true,
+    monto: parseFloat(monto)||0, observaciones:observ, viusteConfirmado:true,
     items, conDiff, totalFaltante:Math.abs(faltante), totalSobrante:sobrante,
     totalSKUs: items.filter(it=>it.conteo!==null).length
   };
@@ -922,7 +857,7 @@ async function submitForm() {
 
 function resetForm() {
   stockRows=[]; categorias=[]; currentSKUs=[];
-  ['fJefe','fMonto','fDiffCount','fTotalFaltante','fTotalSobrante','fObservaciones']
+  'fJefe','fMonto','fDiffCount','fTotalFaltante','fTotalSobrante','fObservaciones']
     .forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
   document.getElementById('fConfirm').checked = false;
   document.getElementById('fileStatus').innerHTML = '';
@@ -952,7 +887,7 @@ function getWeekDays() {
   const toStr=d=>d.toISOString().split('T')[0];
   const wed=new Date(mon); wed.setDate(mon.getDate()+2);
   const fri=new Date(mon); fri.setDate(mon.getDate()+4);
-  return {weekStart:toStr(mon),weekEnd:toStr(fri)weekDays:[{name:'Lunes',date:toStr(mon)},{name:'Miécoles',date:toStr(wed)},{name:'Viernes',date:toStr(fri)}]};
+  return {weekStart:toStr(mon),weekEnd:toStr(fri),weekDays:[{name:'Lunes',date:toStr(mon)},{name:'Miércoles',date:toStr(wed)},{name:'Viernes',date:toStr(fri)}]};
 }
 
 async function renderDashboard(tienda) {
@@ -974,7 +909,7 @@ async function renderDashboard(tienda) {
   const {weekStart,weekEnd,weekDays} = getWeekDays();
   const wRecs     = records.filter(r => r.fecha >= weekStart && r.fecha <= weekEnd);
   const cum       = Math.round((wRecs.length/3)*100);
-  const totalFalt = records.reduce((s,r)=>s+ar.totalFaltante,0);
+  const totalFalt = records.reduce((s,r)=>s+r.totalFaltante,0);
   const today     = new Date().toISOString().split('T')[0];
 
   document.getElementById('dashContent').innerHTML = `
@@ -986,85 +921,117 @@ async function renderDashboard(tienda) {
     <div class="card">
       <h2>📅 Semana actual — ${weekStart} → ${weekEnd}</h2>
       <div class="week-grid">
-  	��YZ�^\˛X\
-O��ۜ��X�]ԙX�˙�[�
-�O����X�OOOY�]JK\�\�Y�]O]�^K��\�X���ۙIΊ\�\���Z\��[��Ή�[�[���N�]\��]��\��H�^KX�[	���H���]��\��H�������[Y_O�]���]��\��H�H��ܙX����!IΊ\�\����c	Ή�����_O�]���]��\��H���ܙX��	ܙX˚ܘ_H0��	ܙX˘�]X�\�\��ӛ���\]Y�Ή�[�Y[�I�_O�]���	ܙX��]��[OH�X\��[�]���ٛ۝\�^�N��͜�[N���܎��\�KY[��\�H��ٛ]�
-�X˝�[�[[�J_H�[[�O�]�����B��]��JK���[�	��_B��]���	��\��[���OOOI��\\��\�܉ɉ�ԙX�˛[����]��[OH�X\��[�]��M���]ۈ�\��H�����\�H��[OH��X��ܛ�[��ٙ�X�YN���܎��\�KY[��\�N؛ܙ\��\��Y�Y�XNXH�ۘ�X��H��[�[\�
-	��Y[�_I�H��'���[��X\�[\�HH[��[\[ZY[��؝]ۏ��]�����B��]���]��\��H��\������'���\�ܚX[H��X�X���8�%	�Y[�_O����	�\�X�ܙ˛[�����[OH���܎��\�K[]]Y
-Nٛ۝\�^�N��
-\�[H���[��Y�\����p���Θ�]��[OH�ݙ\����^�]]ȏ��X�H�\��H�\�]X�H���XY�����X�O���0�XO���ܘO����Y�O����]Y�ܰ�XO�����\�����ۈY������[[�H	����؜�[�H	���Z�\�H	����T������XY����O��	ܙX�ܙ˜�X�J�
-K�X\
-�O��ۜ�[�]�]J���X�J��L���	�K�V���I�	�[��	�X\��	�Zp�I�	ҝYI�	՚YI�	���X��V���]^J
-WK؏QPT��Г�[��Y\���]^J
-JN�]\������܋��X�_O������I�؏���[��\��H�Y��ȏ��$���[��Ή��O����܋�ܘ_O���܋��Y�_O���܋��]O����܋��[��\�O����܋��ۑY�����[��\��H�Y�[\�H��܋��ۑY��O��[�����[��\��H�Y��ȏ���[���O����[OH���܎��\�KY[��\�Nٛ۝]�ZY�����ٛ]�
-���[�[[�_
-_O����[OH���܎��\�K\�X��\��Nٛ۝]�ZY�����ٛ]�
-���[�؜�[�_
-_O����ٛ]�
-��[۝�_O����܋�Z�\�P�ۙ�\�XY����!IΉ��%	�O������JK���[�	��_B����O���X�O���]��B��]��B���[��[ۈ�[�[\�
-Y[�JH�ۜ�ٙ�S˘�ۙ�Y�
-N��ۜ��ܙOS˜�ܙ\�
-K��[�
-�O�˛�[YOOO]Y[�JN�ۜ��^O[�]�]J
-K��T����[��
-K��]
-	�	�V�N�ۜ��X��Y[���UT�P��\ۙ[�
-�ST�WH��X�X��[�Y[�H8�%	�Y[�_H8�%	��^_X
-N�ۜ���OY[���UT�P��\ۙ[�
-\�[XY��K��HY[�H��Y[�_H�Y[�H��X�X���[�Y[�\�\�H�[X[�H
-	��^_JK��܈�]�܈��\]\�[�ܛ][\�[�HH��]�YY����\�[XHH�۝��H��X�X���8�%PБ��
-N�ۜ��Y[���UT�P��\ۙ[�
-	�ٙ˙[XZ[I��ܙO��	���ܙK�[XZ[���X
-N�[��˛�[�XZ[Ή��O��X��X�I��X��I���OI؛�_X	�؛[���NB����8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d����ӑ�Q��8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d��[��[ۈ�[�\��ۙ�Y��ܙ\�
-H�ۜ�\�Y��[Y[���][[Y[��RY
-	��ܙS\�	�N��ۜ��ܙ\�S˜�ܙ\�
-NY�
-\�ܙ\˛[��
-H�\��[��\�SI��[OH���܎��\�K[]]Y
-Nٛ۝\�^�N��ܙ[H����^HY[�\ˏ�����]\���B�\��[��\�S\�ܙ\˛X\
+        ${weekDays.map(d=>{
+          const rec=wRecs.find(r=>r.fecha===d.date), isPast=d.date<=today, cls=rec?'done':(isPast?'missing':'pending');
+          return `<div class="day-cell ${cls}">
+            <div class="dn">${d.name}</div>
+            <div class="di">${rec?'✅':(isPast?'❌':'⏳')}</div>
+            <div class="dl">${rec?`${rec.hora} · ${rec.cat}`:(isPast?'No completado':'Pendiente')}</div>
+            ${rec?`<div style="margin-top:6px;font-size:.76rem;color:var(--danger)">${fmtCLP(rec.totalFaltante)} faltante</div>`:''}
+          </div>`;
+        }).join('')}
+      </div>
+      ${currentRole==='supervisor'&&wRecs.length<3?`<div style="margin-top:14px"><button class="btn btn-sm" style="background:#ffebee;color:var(--danger);border:1px solid #ef9a9a" onclick="sendAlert('${tienda}')">📧 Enviar alerta de incumplimiento</button></div>`:''}
+    </div>
+    <div class="card">
+      <h2>📋 Historial de cíclicos — ${tienda}</h2>
+      ${!records.length?'<p style="color:var(--muted);font-size:.85rem">Sin registros aún.</p>':`
+      <div style="overflow-x:auto">
+        <table class="hist-table">
+          <thead><tr><th>Fecha</th><th>Día</th><th>Hora</th><th>Jefe</th><th>Categoría</th><th>SKUs</th><th>Con dif.</th><th>Faltante $</th><th>Sobrante $</th><th>Ajuste $</th><th>SAP</th></tr></thead>
+          <tbody>
+            ${records.slice(0,30).map(r=>{
+              const d=new Date(r.fecha+'T12:00:00'), dn=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'][d.getDay()], ob=DIAS_OBL.includes(d.getDay());
+              return `<tr>
+                <td>${r.fecha}</td>
+                <td>${dn}${ob?' <span class="tag ok">✓</span>':''}</td>
+                <td>${r.hora}</td><td>${r.jefe}</td><td>${r.cat}</td>
+                <td>${r.totalSKUs}</td>
+                <td>${r.conDiff>0?`<span class="tag alerta">${r.conDiff}</span>`:'<span class="tag ok">0</span>'}</td>
+                <td style="color:var(--danger);font-weight:700">${fmtCLP(r.totalFaltante||0)}</td>
+                <td style="color:var(--success);font-weight:700">${fmtCLP(r.totalSobrante||0)}</td>
+                <td>${fmtCLP(r.monto)}</td>
+                <td>${r.ajusteConfirmado?'✅':'—'}</td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>`}
+    </div>`;
+}
 
-�JOO��]��[OH�\�^N��^�[YۋZ][\Θ�[�\���\�L��Y[�ΌL؛ܙ\�X���N�\��Y�\�KX�ܙ\�H����[��[OH��۝]�ZY���ٛ^�H��'��	�˛�[Y_O��[����[��[OH���܎��\�K[]]Y
-Nٛ۝\�^�N��ܙ[Nٛ^�K�H���"{�#�	�˙[XZ[O��[����]ۈ�\��H�����\�H��[OH��X��ܛ�[��ٙ�X�YN���܎��\�KY[��\�N؛ܙ\��\��Y�Y�XNXH�ۘ�X��H��[[ݙT�ܙJ	�_JH��[[Z[�\�؝]ۏ���]��
-K���[�	��NB���[��[ۈY�ܙJ
-H�ۜ��[YOY��[Y[���][[Y[��RY
-	ۙ]��ܙS�[YI�K��[YK��[J
-K[XZ[Y��[Y[���][[Y[��RY
-	ۙ]��ܙQ[XZ[	�K��[YK��[J
-NY�[�[Y_Y[XZ[
-^�����\�
-	���;�#�[�ܙ\�H��X��HH[XZ[	�Nܙ]\���B��ۜ��ܙ\�S˜�ܙ\�
-NY��ܙ\˙�[�
-�O�˛�[YOOO[�[YJJ^�����\�
-	���;�#�XH^\�H\�HY[�I�Nܙ]\���B��ܙ\˜\�
-ۘ[YK[XZ[JN�˜�]�J	��W��ܙ\�݌���ܙ\�N��[Y[���][[Y[��RY
-	ۙ]��ܙS�[YI�K��[YOI�����[Y[���][[Y[��RY
-	ۙ]��ܙQ[XZ[	�K��[YOI���[�\��ۙ�Y��ܙ\�
-N��[]T�ܙT�[X�
+function sendAlert(tienda) {
+  const cfg=LS.config(); const store=LS.stores().find(s=>s.name===tienda);
+  const today=new Date().toISOString().split('T')[0];
+  const subj=encodeURIComponent(`[ALERTA] Cíclico pendiente —  ${tienda} — ${today}`);
+  const body=encodeURIComponent(`Estimado/a,\n\nLa tienda "${tienda}" tiene cíclicos pendientes esta semana (${today}).\nPor favor completar el formulario a la brevedad.\n\nSistema de Control de Cíclicos — ICBFS`);
+  const to=encodeURIComponent(`${cfg.email}${store?','+store.email:''}`);
+  window.open(`mailto:${to}?subject=${subj}&body=${body}`,'_blank');
+}
 
-N��[�\��ܙUX��
-N�����\�
-	��!HY[�HYܙY�YI�NB���[��[ۈ�[[ݙT�ܙJJHY�X�ۙ�\�J	��[[Z[�\�\�HY[�O��J\�]\���ۜ��ܙ\�S˜�ܙ\�
-N��ܙ\˜�X�JKJN�˜�]�J	��W��ܙ\�݌���ܙ\�N�[�\��ۙ�Y��ܙ\�
-N��[]T�ܙT�[X�
+// ══════════════════════════════════════════════════════════════
+//  CONFIG
+// ══════════════════════════════════════════════════════════════
+function renderConfigStores() {
+  const list=document.getElementById('storeList'); const stores=LS.stores();
+  if (!stores.length) { list.innerHTML='<p style="color:var(--muted);font-size:.83rem">No hay tiendas.</p>'; return; }
+  list.innerHTML=stores.map((s,i)=>`
+    <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">
+      <span style="font-weight:700;flex:1">🏪 ${s.name}</span>
+      <span style="color:var(--muted);font-size:.83rem;flex:1.5">✉️ ${s.email}</span>
+      <button class="btn btn-sm" style="background:#ffebee;color:var(--danger);border:1px solid #ef9a9a" onclick="removeStore(${i})">Eliminar</button>
+    </div>`).join('');
+}
 
-N��[�\��ܙUX��
-N�����\�
-	�Y[�H[[Z[�YI�NB���[��[ۈ�]�P�ۙ�Y�
-H˜�]�J	��W��ۙ�Y���[XZ[���[Y[���][[Y[��RY
-	�ٙ�[XZ[	�K��[YK��[J
-_JN����\�
-	��!H�ۙ�Y�\�X�p�ۈ�X\�YI�NB���[��[ۈ�X\�[]J
-HY�X�ۙ�\�J	�Лܜ�\�[�X�0�H��[���]��[��\�T�[����H[[Z[�[���J\�]\����[�ܘY�K��[[ݙR][J	��WܙX�ܙ��N����\�
-	��X�0�H��[[[Z[�Y��N�[�\�\���\�
-˜�ܙ\�
-V�O˛�[YJNB����8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d���RHST���8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d8�d��[��[ۈ��՚Y]��[YK��H��[Y[��]Y\�T�[X�ܐ[
-	˝�Y]��K��ܑXX�
-�O����\��\���[[ݙJ	�X�]�I�JN��[Y[���][[Y[��RY
-	ݚY]�I�ۘ[YJK��\��\��Y
-	�X�]�I�N��[Y[��]Y\�T�[X�ܐ[
-	��XZ[��]��]ۉ�K��ܑXX�
-�O����\��\���[[ݙJ	�X�]�I�JNY���H����\��\��Y
-	�X�]�I�NY��[YOOOI�\���\�	�H�[�\��ܙUX��
-NY��[YOOOI��ۙ�Y��H�[�\��ۙ�Y��ܙ\�
-NB���[��[ۈ����\�
-\��H�ۜ�Y��[Y[���][[Y[��
+function addStore() {
+  const name=document.getElementById('newStoreName').value.trim(), email=document.getElementById('newStoreEmail').value.trim();
+  if(!name||!email){showToast('⚠️ Ingresa nombre y email');return;}
+  const stores=LS.stores();
+  if(stores.find(s=>s.name===name)){showToast('⚠️ Ya existe esa tienda');return;}
+  stores.push({name,email}); LS.save('ci_stores_v2',stores);
+  document.getElementById('newStoreName').value=''; document.getElementById('newStoreEmail').value='';
+  renderConfigStores(); populateStoreSelect(); renderStoreTabs(); showToast('✅ Tienda agregada');
+}
+
+function removeStore(i) {
+  if(!confirm('¿Eliminar esta tienda?'))return;
+  const stores=LS.stores(); stores.splice(i,1); LS.save('ci_stores_v2',stores);
+  renderConfigStores(); populateStoreSelect(); renderStoreTabs(); showToast('Tienda eliminada');
+}
+
+function saveConfig() {
+  LS.save('ci_config',{email:document.getElementById('cfgEmail').value.trim()});
+  showToast('✅ Configuración guardada');
+}
+
+function clearAllData() {
+  if(!confirm('¿Borrar el caché local?Los datos en Google Sheets no se eliminan.'))return;
+  localStorage.removeItem('ci_records');
+  showToast('Caché local eliminado');
+  renderDashboard(LS.stores()[0]?.name);
+}
+
+// ══════════════════════════════════════════════════════════════
+//  UI HELPERS
+// ══════════════════════════════════════════════════════════════
+function showView(name,btn) {
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+name).classList.add('active');
+  document.querySelectorAll('#mainNav button').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  if(name==='dashboard') renderStoreTabs();
+  if(name==='config') renderConfigStores();
+}
+
+function showToast(msg) {
+  const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3200);
+}
+
+function fmtN(n)       { return n==null?'—':Number(n).toLocaleString('es-CL',{maximumFractionDigits:3}); }
+function fmtCLP(n)     { return n==null?'—':'$'+Math.round(n).toLocaleString('es-CL'); }
+function fmtSignN(n)   { if(n==null)return'—'; return (n>0?'+':'')+Number(n).toLocaleString('es-CL',{maximumFractionDigits:3}); }
+function fmtSignCLP(n) { if(n==null)return'—'; const abs='$'+Math.round(Math.abs(n)).toLocaleString('es-CL'); return n<0?'-'+abs:n>0?'+'+abs:abs; }
+</script>
+</body>
+</html>
